@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>قائمة أبو مهيب - برجر ومشويات</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'Cairo',sans-serif; background:#0f0f23; color:#fff; }
+        .header { text-align:center; padding:30px 20px 20px; background:linear-gradient(180deg,#1a1a2e,#0f0f23); }
+        .header h1 { font-size:2rem; font-weight:800; background:linear-gradient(135deg,#ff9e40,#ffd54f); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+        .header p { color:#aaa; font-size:0.9rem; margin-top:4px; }
+        .header .phone { color:#ff9e40; font-size:1rem; font-weight:700; margin-top:8px; }
+        .header .address { color:#888; font-size:0.8rem; margin-top:4px; }
+        .cat-section { padding:10px 16px 20px; }
+        .cat-title { font-size:1.1rem; font-weight:700; color:#ff9e40; padding:8px 0; border-bottom:2px solid #ff9e4033; margin-bottom:12px; display:flex; align-items:center; gap:8px; }
+        .cat-title i { font-size:1rem; }
+        .items-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:12px; }
+        .item-card { background:#1a1a2e; border-radius:12px; overflow:hidden; border:1px solid #ffffff10; transition:transform 0.2s; }
+        .item-card img { width:100%; height:120px; object-fit:cover; }
+        .item-card .info { padding:10px; }
+        .item-card .name { font-size:0.85rem; font-weight:700; line-height:1.3; min-height:2.4em; }
+        .item-card .desc { font-size:0.7rem; color:#888; margin-top:4px; line-height:1.3; }
+        .item-card .price { font-size:1rem; font-weight:800; color:#ff9e40; margin-top:6px; }
+        .footer { text-align:center; padding:30px 20px; color:#555; font-size:0.75rem; border-top:1px solid #ffffff10; margin-top:20px; }
+        .no-img { width:100%; height:120px; background:#16213e; display:flex; align-items:center; justify-content:center; font-size:2rem; color:#ff9e4030; }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+    <div class="header">
+        <h1>أبو مهيب</h1>
+        <p>برجر ومشويات</p>
+        <p class="phone"><i class="fas fa-phone-alt"></i> 0531008683</p>
+        <p class="address"><i class="fas fa-map-marker-alt"></i> حي الريان - شارع عثمان بن عفان - الدمام</p>
+    </div>
+    <div id="menuContent"></div>
+    <div class="footer">
+        <p>أبو مهيب للبرجر والمشويات</p>
+        <p style="margin-top:4px;">0531008683</p>
+    </div>
+    <script>
+    const menuItems = [
+        { name:"برجر لحم كلاسيك", category:"برجر", price:17.25, description:"برجر لحم طازج مع جبنة وخضار", image:"https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400" },
+        { name:"برجر دجاج مشوي", category:"برجر", price:16.10, description:"برجر دجاج مشوي على الفحم", image:"https://images.unsplash.com/photo-1606755962773-d324e0a13086?w=400" },
+        { name:"برجر دجاج مقرمش (كريسبي)", category:"برجر", price:16.10, description:"برجر دجاج مقرمش بالبقسماط", image:"https://images.unsplash.com/photo-1625813506062-0aeb1d7a094b?w=400" },
+        { name:"دبل برجر لحم", category:"برجر", price:25.30, description:"طبقتين لحم مع جبنة وصلصة خاصة", image:"https://images.unsplash.com/photo-1586190848861-99aa4a171e90?w=400" },
+        { name:"كباب لحم", category:"مشويات", price:23.00, description:"كباب لحم مشوي على الفحم", image:"https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=400" },
+        { name:"كباب دجاج", category:"مشويات", price:20.70, description:"كباب دجاج مشوي مع بهارات", image:"https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?w=400" },
+        { name:"أوصال لحم", category:"مشويات", price:28.75, description:"أوصال لحم مشوية مع بهارات خاصة", image:"https://images.unsplash.com/photo-1544025162-d76694265947?w=400" },
+        { name:"شيش طاووق", category:"مشويات", price:25.30, description:"صدور دجاج متبلة مشوية", image:"https://images.unsplash.com/photo-1529193591184-b1d58069ecdd?w=400" },
+        { name:"مشكل مشويات (صحن)", category:"مشويات", price:40.25, description:"تشكيلة من المشويات على الفحم", image:"https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400" },
+        { name:"حمص", category:"مقبلات", price:9.20, description:"حمص كريمي مع زيت الزيتون", image:"https://images.unsplash.com/photo-1577906096429-f73c2c312435?w=400" },
+        { name:"متبل", category:"مقبلات", price:9.20, description:"باذنجان مشوي مع طحينة", image:"https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?w=400" },
+        { name:"سلطة خضراء", category:"مقبلات", price:8.05, description:"سلطة طازجة بالخضار", image:"https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=400" },
+        { name:"تبولة", category:"مقبلات", price:9.20, description:"تبولة لبنانية بالبقدونس", image:"https://images.unsplash.com/photo-1627308595229-7830a5c91f9f?w=400" },
+        { name:"ورق عنب", category:"مقبلات", price:11.50, description:"ورق عنب محشي بالأرز واللحم", image:"https://images.unsplash.com/photo-1540420773420-3366772f4999?w=400" },
+        { name:"بيبسي", category:"مشروبات", price:3.45, description:"بيبسي 330 مل", image:"https://images.unsplash.com/photo-1622483767028-3f66f32aef97?w=400" },
+        { name:"سفن أب", category:"مشروبات", price:3.45, description:"سفن أب 330 مل", image:"https://images.unsplash.com/photo-1625772299848-391b6a87d7b3?w=400" },
+        { name:"ماء", category:"مشروبات", price:2.30, description:"مياه معدنية 500 مل", image:"https://images.unsplash.com/photo-1561041695-d2fadf9f318c?w=400" },
+        { name:"عصير برتقال طازج", category:"مشروبات", price:9.20, description:"عصير برتقال طبيعي طازج", image:"https://images.unsplash.com/photo-1613478223719-2ab802602423?w=400" },
+        { name:"بطاطس مقلية", category:"أطباق جانبية", price:8.05, description:"بطاطس مقلية مقرمشة", image:"https://images.unsplash.com/photo-1630384060421-cb20d0e0649d?w=400" },
+        { name:"بطاطس بالجبن", category:"أطباق جانبية", price:11.50, description:"بطاطس مقلية مع جبنة شيدر", image:"https://images.unsplash.com/photo-1585109649139-366815a0d713?w=400" },
+        { name:"أصابع موزاريلا", category:"أطباق جانبية", price:11.50, description:"أصابع موزاريلا مقرمشة", image:"https://images.unsplash.com/photo-1531749668029-2db88e4276c7?w=400" },
+        { name:"أم علي", category:"حلويات", price:13.80, description:"حلوى أم علي بالقشطة والمكسرات", image:"https://images.unsplash.com/photo-1579372786545-d24232daf58c?w=400" },
+        { name:"كنافة بالجبن", category:"حلويات", price:17.25, description:"كنافة بالجبنة مع قطر الزهر", image:"https://images.unsplash.com/photo-1519676867240-f03562e64548?w=400" },
+        { name:"كيكة الشوكولاتة", category:"حلويات", price:11.50, description:"كيكة شوكولاتة طرية", image:"https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=400" }
+    ];
+
+    const catIcons = {
+        "برجر":"fa-burger","مشويات":"fa-fire","مقبلات":"fa-cookie-bite",
+        "مشروبات":"fa-glass-water","أطباق جانبية":"fa-bowl-food","حلويات":"fa-ice-cream"
+    };
+
+    const cats = {};
+    menuItems.forEach(item => {
+        if (!cats[item.category]) cats[item.category] = [];
+        cats[item.category].push(item);
+    });
+
+    let html = '';
+    Object.entries(cats).forEach(([cat, items]) => {
+        html += '<div class="cat-section">';
+        html += '<div class="cat-title"><i class="fas ' + (catIcons[cat]||'fa-utensils') + '"></i> ' + cat + '</div>';
+        html += '<div class="items-grid">';
+        items.forEach(item => {
+            html += '<div class="item-card">';
+            if (item.image) {
+                html += '<img src="' + item.image + '" alt="' + item.name + '" loading="lazy">';
+            } else {
+                html += '<div class="no-img"><i class="fas fa-utensils"></i></div>';
+            }
+            html += '<div class="info">';
+            html += '<div class="name">' + item.name + '</div>';
+            html += '<div class="desc">' + item.description + '</div>';
+            html += '<div class="price">' + item.price.toFixed(2) + ' ر.س</div>';
+            html += '</div></div>';
+        });
+        html += '</div></div>';
+    });
+
+    document.getElementById('menuContent').innerHTML = html;
+    </script>
+</body>
+</html>
