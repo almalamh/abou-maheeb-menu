@@ -310,6 +310,7 @@ var App = {
         this.saveItems();
         document.getElementById('itemModal').classList.remove('active');
         this.renderItemsGrid();
+        this.renderBarcodeSelect();
         this.showToast(id ? '\u062a\u0645 \u062a\u062d\u062f\u064a\u062b \u0627\u0644\u0635\u0646\u0641' : '\u062a\u0645 \u0625\u0636\u0627\u0641\u0629 \u0627\u0644\u0635\u0646\u0641 \u0628\u0646\u062c\u0627\u062d');
     },
 
@@ -1167,7 +1168,8 @@ var App = {
                             id: data.id, items: data.items, subtotal: data.subtotal,
                             tax: data.tax, total: data.total, channel: data.channel || '\u0645\u062d\u0644',
                             paymentMethod: data.paymentMethod || '\u0643\u0627\u0634',
-                            date: data.date, status: 'new', source: data.source || 'menu'
+                            date: data.date, status: 'new', source: data.source || 'menu',
+                            fcmToken: data.fcmToken || ''
                         });
                         self.renderCart();
                         self.showToast('\u0637\u0644\u0628 \u062c\u062f\u064a\u062f \u0645\u0646 \u0627\u0644\u0645\u0646\u064a\u0648: ' + data.id, 'warning');
@@ -1182,24 +1184,48 @@ var App = {
     acceptOrder: function(id) {
         var self = this;
         if (typeof db === 'undefined') return;
+        var token = '';
+        for (var i = 0; i < self.cartOrders.length; i++) {
+            if (self.cartOrders[i].id === id) { token = self.cartOrders[i].fcmToken || ''; break; }
+        }
         db.collection('orders').doc(id).update({ status: 'received' }).then(function() {
             for (var i = 0; i < self.cartOrders.length; i++) {
                 if (self.cartOrders[i].id === id) { self.cartOrders[i].status = 'received'; break; }
             }
             self.renderCart();
             self.showToast('\u062a\u0645 \u0627\u0633\u062a\u0644\u0627\u0645 \u0627\u0644\u0637\u0644\u0628: ' + id);
+            if (token) {
+                db.collection('notifications').add({
+                    fcmToken: token, orderId: id,
+                    title: '\u062a\u0645 \u0627\u0633\u062a\u0644\u0627\u0645 \u0637\u0644\u0628\u0643!',
+                    body: '\u0637\u0644\u0628\u0643 \u0631\u0642\u0645 ' + id + ' \u062a\u0645 \u0627\u0633\u062a\u0644\u0627\u0645\u0647 \u0645\u0646 \u0627\u0644\u0645\u0637\u0639\u0645',
+                    type: 'received', timestamp: new Date().toISOString()
+                });
+            }
         });
     },
 
     prepareOrder: function(id) {
         var self = this;
         if (typeof db === 'undefined') return;
+        var token = '';
+        for (var i = 0; i < self.cartOrders.length; i++) {
+            if (self.cartOrders[i].id === id) { token = self.cartOrders[i].fcmToken || ''; break; }
+        }
         db.collection('orders').doc(id).update({ status: 'preparing' }).then(function() {
             for (var i = 0; i < self.cartOrders.length; i++) {
                 if (self.cartOrders[i].id === id) { self.cartOrders[i].status = 'preparing'; break; }
             }
             self.renderCart();
             self.showToast('\u062c\u0627\u0631\u064a \u062a\u062d\u0636\u064a\u0631 \u0627\u0644\u0637\u0644\u0628: ' + id);
+            if (token) {
+                db.collection('notifications').add({
+                    fcmToken: token, orderId: id,
+                    title: '\u062c\u0627\u0631\u064a \u062a\u062d\u0636\u064a\u0631 \u0637\u0644\u0628\u0643!',
+                    body: '\u0637\u0644\u0628\u0643 \u0631\u0642\u0645 ' + id + ' \u062c\u0627\u0631\u064a \u0627\u0644\u062a\u062d\u0636\u064a\u0631 \u0642\u0631\u064a\u0628\u0627\u064b',
+                    type: 'preparing', timestamp: new Date().toISOString()
+                });
+            }
         });
     },
 
@@ -1207,8 +1233,9 @@ var App = {
         var self = this;
         if (typeof db === 'undefined') return;
         var order = null;
+        var token = '';
         for (var i = 0; i < self.cartOrders.length; i++) {
-            if (self.cartOrders[i].id === id) { order = self.cartOrders[i]; break; }
+            if (self.cartOrders[i].id === id) { order = self.cartOrders[i]; token = order.fcmToken || ''; break; }
         }
         if (!order) return;
         db.collection('orders').doc(id).update({ status: 'done' }).then(function() {
@@ -1227,12 +1254,24 @@ var App = {
             self.cartOrders = newCart;
             self.renderCart();
             self.showToast('\u062a\u0645 \u062a\u0623\u0645\u064a\u0646 \u0627\u0644\u0637\u0644\u0628: ' + id);
+            if (token) {
+                db.collection('notifications').add({
+                    fcmToken: token, orderId: id,
+                    title: '\u0637\u0644\u0628\u0643 \u062c\u0627\u0647\u0632!',
+                    body: '\u0637\u0644\u0628\u0643 \u0631\u0642\u0645 ' + id + ' \u062c\u0627\u0647\u0632 \u0644\u0644\u0627\u0633\u062a\u0644\u0627\u0645!',
+                    type: 'done', timestamp: new Date().toISOString()
+                });
+            }
         });
     },
 
     rejectOrder: function(id) {
         var self = this;
         if (typeof db === 'undefined') return;
+        var token = '';
+        for (var i = 0; i < self.cartOrders.length; i++) {
+            if (self.cartOrders[i].id === id) { token = self.cartOrders[i].fcmToken || ''; break; }
+        }
         if (!confirm('\u0647\u0644 \u0623\u0646\u062a \u0645\u062a\u0623\u0643\u062f \u0645\u0646 \u0631\u0641\u0636 \u0647\u0630\u0627 \u0627\u0644\u0637\u0644\u0628\u061f')) return;
         db.collection('orders').doc(id).update({ status: 'rejected' }).then(function() {
             var newCart = [];
@@ -1242,6 +1281,14 @@ var App = {
             self.cartOrders = newCart;
             self.renderCart();
             self.showToast('\u062a\u0645 \u0631\u0641\u0636 \u0627\u0644\u0637\u0644\u0628: ' + id);
+            if (token) {
+                db.collection('notifications').add({
+                    fcmToken: token, orderId: id,
+                    title: '\u062a\u0645 \u0631\u0641\u0636 \u0637\u0644\u0628\u0643',
+                    body: '\u0639\u0630\u0631\u064b\u0627 \u062a\u0645 \u0631\u0641\u0636 \u0637\u0644\u0628\u0643 \u0631\u0642\u0645 ' + id,
+                    type: 'rejected', timestamp: new Date().toISOString()
+                });
+            }
         });
     },
 
