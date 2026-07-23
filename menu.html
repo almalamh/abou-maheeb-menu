@@ -72,7 +72,7 @@
         .status-step { display:flex; align-items:center; gap:10px; padding:10px 14px; font-size:0.85rem; color:#555; border-right:3px solid #333; position:relative; }
         .status-step.active { color:#ff9e40; border-right-color:#ff9e40; }
         .status-step.done { color:#00b894; border-right-color:#00b894; }
-        .notif-perm-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:5000; justify-content:center; align-items:center; }
+        .notif-perm-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:2500; justify-content:center; align-items:center; }
         .notif-perm-overlay.active { display:flex; }
         .notif-perm-box { background:#1a1a2e; border-radius:20px; padding:32px 24px; text-align:center; width:90%; max-width:340px; animation:popIn 0.4s ease; }
         .notif-perm-icon { width:72px; height:72px; border-radius:50%; background:linear-gradient(135deg,#ff9e40,#ffd54f); display:flex; align-items:center; justify-content:center; font-size:1.8rem; color:#1a1a2e; margin:0 auto 16px; }
@@ -224,7 +224,9 @@
 
     function showNotifPermPopup() {
         if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
-            setTimeout(function() { document.getElementById('notifPermOverlay').classList.add('active'); }, 2000);
+            if (!getActiveOrder()) {
+                document.getElementById('notifPermOverlay').classList.add('active');
+            }
         }
     }
 
@@ -232,10 +234,16 @@
         if (typeof Notification !== 'undefined') {
             Notification.requestPermission().then(function(p) {
                 document.getElementById('notifPermOverlay').classList.remove('active');
-                if (p === 'granted') { showToast('تم تفعيل الإشعارات!'); initFCM(); }
+                if (p === 'granted') { 
+                    showToast('تم تفعيل الإشعارات!');
+                    initFCM();
+                } else if (p === 'denied') {
+                    showToast('تم رفض الإشعارات');
+                }
             });
         } else {
             document.getElementById('notifPermOverlay').classList.remove('active');
+            showToast('متصفحك لا يدعم الإشعارات');
         }
     }
 
@@ -243,9 +251,6 @@
         if (typeof firebase === 'undefined' || !firebase.messaging) return;
         try {
             messagingInstance = firebase.messaging();
-            messagingInstance.getToken().then(function(token) {
-                fcmToken = token;
-            }).catch(function() {});
             messagingInstance.onMessage(function(payload) {
                 notifyAlert();
                 if (payload.notification) { showToast(payload.notification.body || payload.notification.title); }
@@ -461,7 +466,7 @@
                 renderMenu();
                 updateCartBar();
                 orderNum++;
-                saveActiveOrder(orderId);
+                try { saveActiveOrder(orderId); } catch(e) {}
                 document.getElementById('successOverlay').classList.add('active');
                 setTimeout(function() {
                     document.getElementById('successOverlay').classList.remove('active');
@@ -579,9 +584,10 @@
     var savedOrder = getActiveOrder();
     if (savedOrder) {
         document.getElementById('activeOrderBanner').style.display = 'block';
+        showOrderStatus(savedOrder);
     }
 
-    showNotifPermPopup();
+    setTimeout(function() { showNotifPermPopup(); }, 3000);
     </script>
 </body>
 </html>
