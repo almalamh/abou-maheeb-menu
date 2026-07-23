@@ -86,39 +86,48 @@
 
     <div class="app-container" id="appContainer" style="display:none;">
         <aside class="sidebar">
-            <div class="logo" style="padding:20px 12px;">
-                <div class="sidebar-top" style="display:flex;align-items:center;justify-content:center;gap:10px;">
-                    <div id="sidebarQR" class="sidebar-qr-side"></div>
-                    <div style="display:flex;flex-direction:column;align-items:center;">
-                        <svg viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg" style="width:160px;height:auto;">
-                            <defs>
-                                <linearGradient id="sg" x1="0%" y1="0%" x2="100%" y2="100%">
-                                    <stop offset="0%" stop-color="#ff9e40"/>
-                                    <stop offset="100%" stop-color="#ffd54f"/>
-                                </linearGradient>
-                                <linearGradient id="sf" x1="0%" y1="100%" x2="100%" y2="0%">
-                                    <stop offset="0%" stop-color="#bf360c"/>
-                                    <stop offset="50%" stop-color="#e65100"/>
-                                    <stop offset="100%" stop-color="#ff9e40"/>
-                                </linearGradient>
-                                <path id="topArc" d="M 15 80 Q 100 5 185 80" fill="none"/>
-                                <path id="botArc" d="M 30 85 Q 100 110 170 85" fill="none"/>
-                            </defs>
-                            <circle cx="100" cy="60" r="55" fill="none" stroke="url(#sg)" stroke-width="2.5" opacity="0.9"/>
-                            <circle cx="100" cy="60" r="50" fill="none" stroke="url(#sg)" stroke-width="1" opacity="0.3"/>
-                            <g transform="translate(100,52)">
-                                <path d="M0,-22 C-3,-16 -18,0 -18,13 C-18,21 -10,27 0,29 C10,27 18,21 18,13 C18,0 3,-16 0,-22 Z" fill="url(#sf)"/>
-                                <path d="M0,-10 C-2,-5 -10,3 -10,11 C-10,16 -6,19 0,21 C6,19 10,16 10,11 C10,3 2,-5 0,-10 Z" fill="#ffcc80" opacity="0.7"/>
-                            </g>
-                            <text fill="url(#sg)" font-family="Cairo,Arial,sans-serif" font-size="18" font-weight="800" letter-spacing="2">
-                                <textPath href="#topArc" startOffset="50%" text-anchor="middle">أبو مهيب</textPath>
-                            </text>
-                            <text fill="url(#sg)" font-family="Cairo,Arial,sans-serif" font-size="10" font-weight="600" letter-spacing="1" opacity="0.5">
-                                <textPath href="#botArc" startOffset="50%" text-anchor="middle">للمشاوي والبرجر</textPath>
-                            </text>
-                        </svg>
-                    </div>
-                </div>
+            <div class="logo">
+                <svg class="pro-logo sidebar-logo-svg" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="sf" x1="0%" y1="100%" x2="100%" y2="0%">
+                            <stop offset="0%" stop-color="#bf360c"/>
+                            <stop offset="50%" stop-color="#e65100"/>
+                            <stop offset="100%" stop-color="#ff9e40"/>
+                        </linearGradient>
+                        <linearGradient id="sg" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#ff9e40"/>
+                            <stop offset="100%" stop-color="#ffd54f"/>
+                        </linearGradient>
+                        <linearGradient id="sd" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" stop-color="rgba(255,255,255,0.12)"/>
+                            <stop offset="100%" stop-color="rgba(255,255,255,0.04)"/>
+                        </linearGradient>
+                    </defs>
+                    <circle cx="120" cy="120" r="115" fill="none" stroke="url(#sg)" stroke-width="3"/>
+                    <circle cx="120" cy="120" r="108" fill="url(#sd)"/>
+                    <circle cx="120" cy="120" r="100" fill="none" stroke="url(#sg)" stroke-width="1.5" opacity="0.35"/>
+                    <circle cx="120" cy="120" r="96" fill="none" stroke="url(#sg)" stroke-width="0.5" opacity="0.15"/>
+                    <path id="sta" d="M 35 120 A 85 85 0 0 1 205 120" fill="none"/>
+                    <text fill="url(#sg)" font-family="Cairo, sans-serif" font-size="22" font-weight="800" letter-spacing="4">
+                        <textPath href="#sta" startOffset="50%" text-anchor="middle">أبو مهيب</textPath>
+                    </text>
+                    <path id="sba" d="M 35 125 A 85 85 0 0 0 205 125" fill="none"/>
+                    <text fill="url(#sg)" font-family="Cairo, sans-serif" font-size="13" font-weight="600" letter-spacing="2" opacity="0.6">
+                        <textPath href="#sba" startOffset="50%" text-anchor="middle">برجر ومشويات</textPath>
+                    </text>
+                    <circle cx="32" cy="122" r="3.5" fill="url(#sg)" opacity="0.7"/>
+                    <circle cx="208" cy="122" r="3.5" fill="url(#sg)" opacity="0.7"/>
+                    <g transform="translate(120,105)">
+                        <path d="M0,-35 C-5,-25 -28,0 -28,20 C-28,33 -16,42 0,45 C16,42 28,33 28,20 C28,0 5,-25 0,-35 Z" fill="url(#sf)"/>
+                        <path d="M0,-15 C-3,-8 -16,5 -16,17 C-16,26 -9,31 0,33 C9,31 16,26 16,17 C16,5 3,-8 0,-15 Z" fill="#ffcc80" opacity="0.7"/>
+                        <path d="M0,0 C-2,5 -8,12 -8,20 C-8,26 -4,29 0,30 C4,29 8,26 8,20 C8,12 2,5 0,0 Z" fill="#fff3e0" opacity="0.8"/>
+                    </g>
+                    <line x1="75" y1="158" x2="165" y2="158" stroke="url(#sg)" stroke-width="2" stroke-linecap="round" opacity="0.4"/>
+                    <line x1="80" y1="165" x2="160" y2="165" stroke="url(#sg)" stroke-width="2" stroke-linecap="round" opacity="0.25"/>
+                    <line x1="85" y1="172" x2="155" y2="172" stroke="url(#sg)" stroke-width="2" stroke-linecap="round" opacity="0.15"/>
+                </svg>
+                <div class="sidebar-qr" id="sidebarQR"></div>
+                <h1>أبو مهيب</h1>
             </div>
             <nav>
                 <a href="#" class="nav-item active" data-page="dashboard">
@@ -174,19 +183,37 @@
                 <div class="page active" id="page-dashboard">
                     
                     <div class="dash-welcome">
-                        <div class="dash-welcome-text" style="text-align:center;width:100%;display:flex;flex-direction:column;align-items:center;">
-                            <svg viewBox="0 0 500 160" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:480px;height:auto;">
+                        <div class="dash-welcome-text" style="text-align:center;width:100%;display:flex;flex-direction:column;align-items:center;gap:8px;">
+                            <svg viewBox="0 0 500 140" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:480px;height:auto;">
                                 <defs>
                                     <linearGradient id="wg" x1="0%" y1="0%" x2="100%" y2="100%">
                                         <stop offset="0%" stop-color="#ffd54f"/>
                                         <stop offset="50%" stop-color="#ffb300"/>
                                         <stop offset="100%" stop-color="#ff9e40"/>
                                     </linearGradient>
-                                    <path id="welcomeArc" d="M 40 130 Q 250 10 460 130" fill="none"/>
+                                    <path id="welcomeArc" d="M 30 110 Q 250 15 470 110" fill="none"/>
                                 </defs>
-                                <text fill="url(#wg)" font-family="Cairo,Arial,sans-serif" font-size="28" font-weight="800" letter-spacing="2">
+                                <text fill="url(#wg)" font-family="Cairo,Arial,sans-serif" font-size="32" font-weight="800" letter-spacing="2">
                                     <textPath href="#welcomeArc" startOffset="50%" text-anchor="middle">مرحباً بكم في مطاعم أبو مهيب للمشاوي والبرجر</textPath>
                                 </text>
+                            </svg>
+                            <svg viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg" style="width:100px;height:100px;filter:drop-shadow(0 4px 20px rgba(255,158,64,0.3));">
+                                <defs>
+                                    <linearGradient id="dwf" x1="0%" y1="100%" x2="100%" y2="0%"><stop offset="0%" stop-color="#bf360c"/><stop offset="50%" stop-color="#e65100"/><stop offset="100%" stop-color="#ff9e40"/></linearGradient>
+                                    <linearGradient id="dwg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#ff9e40"/><stop offset="100%" stop-color="#ffd54f"/></linearGradient>
+                                    <linearGradient id="dwd" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="rgba(255,255,255,0.15)"/><stop offset="100%" stop-color="rgba(255,255,255,0.05)"/></linearGradient>
+                                </defs>
+                                <circle cx="120" cy="120" r="115" fill="none" stroke="url(#dwg)" stroke-width="3"/>
+                                <circle cx="120" cy="120" r="108" fill="url(#dwd)"/>
+                                <circle cx="120" cy="120" r="100" fill="none" stroke="url(#dwg)" stroke-width="1.5" opacity="0.35"/>
+                                <path id="dwa" d="M 35 120 A 85 85 0 0 1 205 120" fill="none"/>
+                                <text fill="url(#dwg)" font-family="Cairo,Arial,sans-serif" font-size="22" font-weight="800" letter-spacing="4"><textPath href="#dwa" startOffset="50%" text-anchor="middle">أبو مهيب</textPath></text>
+                                <path id="dwb" d="M 35 125 A 85 85 0 0 0 205 125" fill="none"/>
+                                <text fill="url(#dwg)" font-family="Cairo,Arial,sans-serif" font-size="13" font-weight="600" letter-spacing="2" opacity="0.6"><textPath href="#dwb" startOffset="50%" text-anchor="middle">برجر ومشويات</textPath></text>
+                                <circle cx="32" cy="122" r="3.5" fill="url(#dwg)" opacity="0.7"/>
+                                <circle cx="208" cy="122" r="3.5" fill="url(#dwg)" opacity="0.7"/>
+                                <g transform="translate(120,105)"><path d="M0,-35 C-5,-25 -28,0 -28,20 C-28,33 -16,42 0,45 C16,42 28,33 28,20 C28,0 5,-25 0,-35 Z" fill="url(#dwf)"/><path d="M0,-15 C-3,-8 -16,5 -16,17 C-16,26 -9,31 0,33 C9,31 16,26 16,17 C16,5 3,-8 0,-15 Z" fill="#ffcc80" opacity="0.7"/></g>
+                                <line x1="75" y1="158" x2="165" y2="158" stroke="url(#dwg)" stroke-width="2" stroke-linecap="round" opacity="0.4"/>
                             </svg>
                             <div class="dash-welcome-qr">
                                 <div id="dashQR"></div>
