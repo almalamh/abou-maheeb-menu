@@ -981,5 +981,20 @@ const App = {
         }, 2500);
     }
 };
+// توليد باركود المنيو داخل الفاتورة
+const menuUrl = "https://almalamh.github.io/abou-maheeb-menu/";
+const qrContainer = document.getElementById("receiptQR");
 
+if (qrContainer) {
+  qrContainer.innerHTML = "";
+  if (typeof QRCode !== "undefined") {
+    new QRCode(qrContainer, {
+      text: menuUrl,
+      width: 160,
+      height: 160
+    });
+  } else if (typeof generateQRCanvas === "function") {
+    generateQRCanvas(qrContainer, menuUrl, 160);
+  }
+}
 document.addEventListener('DOMContentLoaded', () => App.init());
