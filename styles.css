@@ -883,6 +883,20 @@ body {
     color: white;
 }
 
+.item-btn.receipt {
+    background: #dfe6e9;
+    color: #00b894;
+}
+
+.item-btn.receipt:hover {
+    background: #00b894;
+    color: white;
+}
+
+.order-btns {
+    white-space: nowrap;
+}
+
 .item-barcode {
     margin-top: 12px;
     text-align: center;
