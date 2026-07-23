@@ -30,15 +30,29 @@
 </head>
 <body>
     <div class="header">
+        <svg viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg" style="width:120px;height:120px;margin:0 auto 12px;display:block;">
+            <defs>
+                <linearGradient id="mrf" x1="0%" y1="100%" x2="100%" y2="0%"><stop offset="0%" stop-color="#bf360c"/><stop offset="50%" stop-color="#e65100"/><stop offset="100%" stop-color="#ff9e40"/></linearGradient>
+                <linearGradient id="mrg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#ff9e40"/><stop offset="100%" stop-color="#ffd54f"/></linearGradient>
+            </defs>
+            <circle cx="120" cy="120" r="115" fill="none" stroke="url(#mrg)" stroke-width="3"/>
+            <circle cx="120" cy="120" r="108" fill="#1a1a2e"/>
+            <path id="msta" d="M 35 120 A 85 85 0 0 1 205 120" fill="none"/>
+            <text fill="url(#mrg)" font-family="Cairo,Arial,sans-serif" font-size="22" font-weight="800" letter-spacing="4"><textPath href="#msta" startOffset="50%" text-anchor="middle">أبو مهيب</textPath></text>
+            <path id="msba" d="M 35 125 A 85 85 0 0 0 205 125" fill="none"/>
+            <text fill="url(#mrg)" font-family="Cairo,Arial,sans-serif" font-size="13" font-weight="600" letter-spacing="2" opacity="0.6"><textPath href="#msba" startOffset="50%" text-anchor="middle">برجر ومشويات</textPath></text>
+            <g transform="translate(120,105)"><path d="M0,-35 C-5,-25 -28,0 -28,20 C-28,33 -16,42 0,45 C16,42 28,33 28,20 C28,0 5,-25 0,-35 Z" fill="url(#mrf)"/><path d="M0,-15 C-3,-8 -16,5 -16,17 C-16,26 -9,31 0,33 C9,31 16,26 16,17 C16,5 3,-8 0,-15 Z" fill="#ffcc80" opacity="0.7"/></g>
+        </svg>
         <h1>أبو مهيب</h1>
         <p>برجر ومشويات</p>
         <p class="phone"><i class="fas fa-phone-alt"></i> 0531008683</p>
-        <p class="address"><i class="fas fa-map-marker-alt"></i> حي الريان - شارع عثمان بن عفان - الدمام</p>
+        <p class="address"><i class="fas fa-map-marker-alt"></i> المدينة: الدمام - الحي الريان - الشارع عثمان بن عفان</p>
     </div>
     <div id="menuContent"></div>
     <div class="footer">
         <p>أبو مهيب للبرجر والمشويات</p>
-        <p style="margin-top:4px;">0531008683</p>
+        <p style="margin-top:4px;"><i class="fas fa-phone-alt"></i> 0531008683</p>
+        <p style="margin-top:4px;"><i class="fas fa-map-marker-alt"></i> الدمام - الحي الريان - الشارع عثمان بن عفان</p>
     </div>
     <script>
     const menuItems = [
