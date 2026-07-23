@@ -53,9 +53,8 @@ body {
 
 .logo {
     text-align: center;
-    padding: 20px 12px;
+    padding: 28px 20px;
     border-bottom: 1px solid rgba(255,255,255,0.1);
-    background: radial-gradient(ellipse at center, rgba(230,81,0,0.08) 0%, transparent 70%);
 }
 
 .pro-logo {
@@ -67,6 +66,27 @@ body {
     width: 130px;
     height: 130px;
     filter: drop-shadow(0 2px 10px rgba(255, 158, 64, 0.25));
+}
+
+.sidebar-qr {
+    text-align: center;
+    margin: 8px 0 4px;
+}
+
+.sidebar-qr img {
+    width: 90px;
+    height: 90px;
+    border-radius: 6px;
+    border: 2px solid rgba(255,158,64,0.4);
+    background: white;
+    padding: 3px;
+}
+
+.sidebar-qr span {
+    display: block;
+    font-size: 0.6rem;
+    opacity: 0.45;
+    margin-top: 4px;
 }
 
 .sidebar-qr-side {
@@ -89,27 +109,6 @@ body {
     opacity: 0.4;
     margin-top: 3px;
     text-align: center;
-}
-
-.sidebar-qr {
-    text-align: center;
-    margin: 8px 0 4px;
-}
-
-.sidebar-qr img {
-    width: 90px;
-    height: 90px;
-    border-radius: 6px;
-    border: 2px solid rgba(255,158,64,0.4);
-    background: white;
-    padding: 3px;
-}
-
-.sidebar-qr span {
-    display: block;
-    font-size: 0.6rem;
-    opacity: 0.45;
-    margin-top: 4px;
 }
 
 .login-logo-svg {
