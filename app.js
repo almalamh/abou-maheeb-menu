@@ -1027,7 +1027,7 @@ var App = {
         var container = document.getElementById('sidebarQR');
         if (!container) return;
         var qrImgUrl = this.getQRImageUrl(this.getMenuUrl(), 140);
-        container.innerHTML = '<img src="' + qrImgUrl + '" alt="QR Menu" title="امسح لعرض القائمة"><span>امسح للقائمة</span>';
+        container.innerHTML = '<img src="' + qrImgUrl + '" alt="QR Menu" title="امسح لعرض القائمة"><span>امسح لعرض القائمة</span>';
     },
 
     renderDashboard: function() {
