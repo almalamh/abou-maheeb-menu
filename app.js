@@ -689,10 +689,6 @@ const App = {
         <line x1="85" y1="172" x2="155" y2="172" stroke="url(#rg)" stroke-width="2" stroke-linecap="round" opacity="0.2"/>
     </svg>`,
 
-    buildMenuQRUrl() {
-        return 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=' + encodeURIComponent('https://almalamh.github.io/abou-maheeb-menu/menu.html');
-    },
-
     showReceipt(order) {
         const modal = document.getElementById('receiptModal');
         const content = document.getElementById('receiptContent');
@@ -705,10 +701,8 @@ const App = {
             ${this.receiptLogo}
             <h2>أبو مهيب</h2>
             <p>برجر ومشويات</p>
-            <p style="font-size:0.8rem;color:#555;margin-top:4px;"><i class="fas fa-map-marker-alt"></i> حي الريان - شارع عثمان بن عفان - الدمام</p>
-            <p style="font-size:0.85rem;font-weight:700;margin-top:2px;"><i class="fas fa-phone-alt"></i> 0531008683</p>
-            <p style="margin-top:10px;">${dateStr} - ${timeStr}</p>
-            <p style="margin-top:6px;font-weight:bold;">رقم الطلب: ${order.id}</p>
+            <p>${dateStr} - ${timeStr}</p>
+            <p style="margin-top:8px;font-weight:bold;">رقم الطلب: ${order.id}</p>
             <p><i class="fas fa-store"></i> القناة: ${order.channel || 'محل'}</p>
             <p><i class="fas fa-credit-card"></i> الدفع: ${order.paymentMethod || 'كاش'}</p>
             <hr style="border:1px dashed #ccc;margin:12px 0;">
@@ -734,10 +728,6 @@ const App = {
             </div>
             <hr style="border:1px dashed #ccc;margin:12px 0;">
             <p>شكراً لزيارتكم!</p>
-            <div class="receipt-qr" id="receiptQR">
-                <img src="${this.buildMenuQRUrl()}" alt="QR Code" style="width:220px;height:220px;border:3px solid #1a1a2e;border-radius:8px;">
-            </div>
-            <p style="font-size:0.65rem;color:#999;margin-top:4px;">امسح الكود لعرض القائمة</p>
         `;
 
         modal.classList.add('active');
@@ -759,9 +749,7 @@ const App = {
                     ${this.receiptLogo}
                     <h2>أبو مهيب</h2>
                     <p>برجر ومشويات</p>
-                    <p style="font-size:0.8rem;color:#555;">حي الريان - شارع عثمان بن عفان - الدمام</p>
-                    <p style="font-size:0.85rem;font-weight:700;">0531008683</p>
-                    <p style="margin-top:8px;">${dateStr} - ${timeStr}</p>
+                    <p>${dateStr} - ${timeStr}</p>
                     <p><strong>${order.id}</strong></p>
                     <p>القناة: ${order.channel || 'محل'} | الدفع: ${order.paymentMethod || 'كاش'}</p>
                     <hr>
@@ -771,11 +759,7 @@ const App = {
                     <div class="receipt-item total"><span>الإجمالي</span><span>${order.total.toFixed(2)} ر.س</span></div>
                     <hr>
                     <p>شكراً لزيارتكم!</p>
-                    <div id="printQR">
-                        <img src="${this.buildMenuQRUrl()}" alt="QR Code" style="width:220px;height:220px;border:3px solid #000;border-radius:8px;">
-                    </div>
-                    <p style="font-size:0.65rem;color:#999;">امسح الكود لعرض القائمة</p>
-                    <script>window.onload=function(){setTimeout(function(){window.print();},1500);}<\/script>
+                    <script>window.onload=function(){window.print();}<\/script>
                 </body>
                 </html>
             `);
