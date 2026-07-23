@@ -298,7 +298,7 @@ body {
     border-radius: 16px;
     padding: 28px 32px;
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
     margin-bottom: 28px;
     position: relative;
