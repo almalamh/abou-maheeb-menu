@@ -1,293 +1,427 @@
 const App = {
-    items: [],
-    orders: [],
+    // ── البيانات الأولية ──
+    items: JSON.parse(localStorage.getItem('app_items')) || [],
+    orders: JSON.parse(localStorage.getItem('app_orders')) || [],
+    categories: ['وجبات رئيسية', 'مقبلات', 'مشروبات', 'حلويات'],
     cart: [],
-    html5QrCode: null,
-    scanning: false,
-    paymentMethod: 'كاش',
-    orderChannel: 'محل',
+    receiptLogo: '',
 
+    // ── التهيئة ──
     init() {
-        this.setupLogin();
-    },
-
-    // ── Login ──
-    setupLogin() {
-        const logged = sessionStorage.getItem('abou_maheeb_logged');
-        if (logged) {
-            this.showApp();
-            return;
-        }
-
-        document.getElementById('loginForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const user = document.getElementById('loginUser').value.trim();
-            const pass = document.getElementById('loginPass').value;
-
-            if (user === 'mm77' && pass === '1234') {
-                sessionStorage.setItem('abou_maheeb_logged', '1');
-                this.showApp();
-            } else {
-                document.getElementById('loginError').classList.add('show');
-                document.getElementById('loginPass').value = '';
-                setTimeout(() => document.getElementById('loginError').classList.remove('show'), 3000);
-            }
-        });
-    },
-
-    showApp() {
-        document.getElementById('loginPage').style.display = 'none';
-        document.getElementById('appContainer').style.display = 'flex';
-
-        document.getElementById('logoutBtn').addEventListener('click', (e) => {
-            e.preventDefault();
-            sessionStorage.removeItem('abou_maheeb_logged');
-            location.reload();
-        });
-
-        this.loadData();
         this.setupNavigation();
-        this.setupModal();
-        this.setupItems();
-        this.setupBarcodeGenerator();
-        this.setupBarcodeScanner();
+        this.setupItemsManagement();
         this.setupPOS();
         this.setupOrders();
         this.setupSearch();
-        this.setDate();
         this.renderDashboard();
+        this.renderItemsTable();
+        this.renderPOSCategories();
+        this.renderPOSItems();
     },
 
-    defaultItems: [
-        { name: "برجر لحم كلاسيك", category: "برجر", price: 17.25, cost: 7, description: "برجر لحم طازج مع جبنة وخضار", sizes: "standard", image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=500" },
-        { name: "برجر دجاج مشوي", category: "برجر", price: 16.10, cost: 6, description: "برجر دجاج مشوي على الفحم", sizes: "standard", image: "https://images.unsplash.com/photo-1606755962773-d324e0a13086?w=500" },
-        { name: "برجر دجاج مقرمش (كريسبي)", category: "برجر", price: 16.10, cost: 6, description: "برجر دجاج مقرمش بالبقسماط", sizes: "standard", image: "https://images.unsplash.com/photo-1625813506062-0aeb1d7a094b?w=500" },
-        { name: "دبل برجر لحم", category: "برجر", price: 25.30, cost: 11, description: "طبقتين لحم مع جبنة وصلصة خاصة", sizes: "standard", image: "https://images.unsplash.com/photo-1586190848861-99aa4a171e90?w=500" },
-        { name: "كباب لحم", category: "مشويات", price: 23.00, cost: 10, description: "كباب لحم مشوي على الفحم", sizes: "standard", image: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=500" },
-        { name: "كباب دجاج", category: "مشويات", price: 20.70, cost: 9, description: "كباب دجاج مشوي مع بهارات", sizes: "standard", image: "https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?w=500" },
-        { name: "أوصال لحم", category: "مشويات", price: 28.75, cost: 13, description: "أوصال لحم مشوية مع بهارات خاصة", sizes: "standard", image: "https://images.unsplash.com/photo-1544025162-d76694265947?w=500" },
-        { name: "شيش طاووق", category: "مشويات", price: 25.30, cost: 11, description: "صدور دجاج متبلة مشوية", sizes: "standard", image: "https://images.unsplash.com/photo-1529193591184-b1d58069ecdd?w=500" },
-        { name: "مشكل مشويات (صحن)", category: "مشويات", price: 40.25, cost: 18, description: "تشكيلة من المشويات على الفحم", sizes: "standard", image: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=500" },
-        { name: "حمص", category: "مقبلات", price: 9.20, cost: 3, description: "حمص كريمي مع زيت الزيتون", sizes: "standard", image: "https://images.unsplash.com/photo-1577906096429-f73c2c312435?w=500" },
-        { name: "متبل", category: "مقبلات", price: 9.20, cost: 3, description: "باذنجان مشوي مع طحينة", sizes: "standard", image: "https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?w=500" },
-        { name: "سلطة خضراء", category: "مقبلات", price: 8.05, cost: 2, description: "سلطة طازجة بالخضار", sizes: "standard", image: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=500" },
-        { name: "تبولة", category: "مقبلات", price: 9.20, cost: 3, description: "تبولة لبنانية بالبقدونس", sizes: "standard", image: "https://images.unsplash.com/photo-1627308595229-7830a5c91f9f?w=500" },
-        { name: "ورق عنب", category: "مقبلات", price: 11.50, cost: 4, description: "ورق عنب محشي بالأرز واللحم", sizes: "standard", image: "https://images.unsplash.com/photo-1540420773420-3366772f4999?w=500" },
-        { name: "ببسي", category: "مشروبات", price: 3.45, cost: 1, description: "بيبسي 330 مل", sizes: "standard", image: "https://images.unsplash.com/photo-1622483767028-3f66f32aef97?w=500" },
-        { name: "سفن أب", category: "مشروبات", price: 3.45, cost: 1, description: "سفن أب 330 مل", sizes: "standard", image: "https://images.unsplash.com/photo-1625772299848-391b6a87d7b3?w=500" },
-        { name: "ماء", category: "مشروبات", price: 2.30, cost: 0.5, description: "مياه معدنية 500 مل", sizes: "standard", image: "https://images.unsplash.com/photo-1561041695-d2fadf9f318c?w=500" },
-        { name: "عصير برتقال طازج", category: "مشروبات", price: 9.20, cost: 3, description: "عصير برتقال طبيعي طازج", sizes: "standard", image: "https://images.unsplash.com/photo-1613478223719-2ab802602423?w=500" },
-        { name: "بطاطس مقلية", category: "أطباق جانبية", price: 8.05, cost: 2, description: "بطاطس مقلية مقرمشة", sizes: "standard", image: "https://images.unsplash.com/photo-1630384060421-cb20d0e0649d?w=500" },
-        { name: "بطاطس بالجبن", category: "أطباق جانبية", price: 11.50, cost: 4, description: "بطاطس مقلية مع جبنة شيدر", sizes: "standard", image: "https://images.unsplash.com/photo-1585109649139-366815a0d713?w=500" },
-        { name: "أصابع موزاريلا", category: "أطباق جانبية", price: 11.50, cost: 4, description: "أصابع موزاريلا مقرمشة", sizes: "standard", image: "https://images.unsplash.com/photo-1531749668029-2db88e4276c7?w=500" },
-        { name: "أم علي", category: "حلويات", price: 13.80, cost: 5, description: "حلوى أم علي بالقشطة والمكسرات", sizes: "standard", image: "https://images.unsplash.com/photo-1579372786545-d24232daf58c?w=500" },
-        { name: "كنافة بالجبن", category: "حلويات", price: 17.25, cost: 6, description: "كنافة بالجبنة مع قطر الزهر", sizes: "standard", image: "https://images.unsplash.com/photo-1519676867240-f03562e64548?w=500" },
-        { name: "كيكة الشوكولاتة", category: "حلويات", price: 11.50, cost: 4, description: "كيكة شوكولاتة طرية", sizes: "standard", image: "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=500" }
-    ],
-
-    // ── localStorage ──
-    loadData() {
-        this.items = JSON.parse(localStorage.getItem('abou_maheeb_items')) || [];
-        this.orders = JSON.parse(localStorage.getItem('abou_maheeb_orders')) || [];
-
-        if (this.items.length === 0) {
-            this.items = this.defaultItems.map(item => ({
-                ...item,
-                id: Date.now().toString() + Math.random().toString(36).substr(2, 5),
-                barcode: this.generateBarcodeNumber(),
-                createdAt: new Date().toISOString()
-            }));
-            this.saveItems();
-        }
-    },
-
-    saveItems() {
-        localStorage.setItem('abou_maheeb_items', JSON.stringify(this.items));
-    },
-
-    saveOrders() {
-        localStorage.setItem('abou_maheeb_orders', JSON.stringify(this.orders));
-    },
-
-    // ── Navigation ──
+    // ── التنقل بين الصفحات ──
     setupNavigation() {
-        document.querySelectorAll('.nav-item').forEach(link => {
+        const navLinks = document.querySelectorAll('.nav-link');
+        const pages = document.querySelectorAll('.page');
+
+        navLinks.forEach(link => {
             link.addEventListener('click', (e) => {
                 e.preventDefault();
-                const page = link.dataset.page;
-                document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+                const targetPage = link.getAttribute('data-page');
+
+                navLinks.forEach(l => l.classList.remove('active'));
+                pages.forEach(p => p.classList.remove('active'));
+
                 link.classList.add('active');
-                document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-                document.getElementById('page-' + page).classList.add('active');
-                document.querySelector('.sidebar').classList.remove('open');
-                if (page === 'items') this.renderItemsGrid();
-                if (page === 'barcode-gen') this.renderBarcodeSelect();
-                if (page === 'pos') this.renderPOSItems();
-                if (page === 'dashboard') this.renderDashboard();
-                if (page === 'orders') this.renderOrdersTable();
+                document.getElementById(`page-${targetPage}`).classList.add('active');
+
+                if (targetPage === 'dashboard') this.renderDashboard();
+                if (targetPage === 'orders') this.renderOrdersTable();
             });
         });
-
-        document.getElementById('menuToggle').addEventListener('click', () => {
-            document.querySelector('.sidebar').classList.toggle('open');
-        });
     },
 
-    setDate() {
-        const now = new Date();
-        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-        document.getElementById('currentDate').textContent = now.toLocaleDateString('ar-SA', options);
-    },
-
-    // ── Modal ──
-    setupModal() {
-        const modal = document.getElementById('itemModal');
-        const form = document.getElementById('itemForm');
-
-        document.getElementById('addItemBtn').addEventListener('click', () => {
-            document.getElementById('modalTitle').textContent = 'إضافة صنف جديد';
-            form.reset();
-            document.getElementById('itemId').value = '';
-            document.getElementById('imagePreview').style.display = 'none';
-            document.getElementById('imagePlaceholder').style.display = 'block';
-            document.getElementById('removeImage').style.display = 'none';
-            document.getElementById('itemImage').value = '';
-            modal.classList.add('active');
-        });
-
-        document.getElementById('closeModal').addEventListener('click', () => modal.classList.remove('active'));
-        document.getElementById('cancelModal').addEventListener('click', () => modal.classList.remove('active'));
-
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) modal.classList.remove('active');
-        });
-
-        document.getElementById('generateBarcodeNum').addEventListener('click', () => {
-            document.getElementById('itemBarcode').value = this.generateBarcodeNumber();
-        });
-
-        const uploadArea = document.getElementById('imageUploadArea');
-        const fileInput = document.getElementById('itemImage');
-        const preview = document.getElementById('imagePreview');
-        const placeholder = document.getElementById('imagePlaceholder');
-        const removeBtn = document.getElementById('removeImage');
-
-        uploadArea.addEventListener('click', () => fileInput.click());
-
-        fileInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = (ev) => {
-                preview.src = ev.target.result;
-                preview.style.display = 'block';
-                placeholder.style.display = 'none';
-                removeBtn.style.display = 'inline-flex';
-            };
-            reader.readAsDataURL(file);
-        });
-
-        removeBtn.addEventListener('click', () => {
-            preview.src = '';
-            preview.style.display = 'none';
-            placeholder.style.display = 'block';
-            removeBtn.style.display = 'none';
-            fileInput.value = '';
-        });
-
-        form.addEventListener('submit', (e) => {
-            e.preventDefault();
-            this.saveItem();
-        });
-    },
-
-    generateBarcodeNumber() {
-        let code;
-        do {
-            code = String(Math.floor(10000000 + Math.random() * 90000000));
-        } while (this.items.find(i => i.barcode === code));
-        return code;
+    // ── إدارة الأصناف ──
+    setupItemsManagement() {
+        const itemForm = document.getElementById('itemForm');
+        if (itemForm) {
+            itemForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                this.saveItem();
+            });
+        }
     },
 
     saveItem() {
-        const id = document.getElementById('itemId').value;
-        const existingItem = id ? this.items.find(i => i.id === id) : null;
-        const imgPreview = document.getElementById('imagePreview');
-        const imageData = imgPreview.style.display !== 'none' ? imgPreview.src : '';
+        const id = document.getElementById('itemId').value || 'ITEM-' + Date.now();
+        const name = document.getElementById('itemName').value;
+        const category = document.getElementById('itemCategory').value;
+        const price = parseFloat(document.getElementById('itemPrice').value) || 0;
+        const barcode = document.getElementById('itemBarcode').value || id;
+        const description = document.getElementById('itemDescription').value;
 
-        const item = {
-            id: id || Date.now().toString(),
-            name: document.getElementById('itemName').value.trim(),
-            category: document.getElementById('itemCategory').value,
-            barcode: document.getElementById('itemBarcode').value.trim() || this.generateBarcodeNumber(),
-            price: parseFloat(document.getElementById('itemPrice').value),
-            cost: parseFloat(document.getElementById('itemCost').value) || 0,
-            description: document.getElementById('itemDescription').value.trim(),
-            sizes: document.getElementById('itemSizes').value,
-            image: imageData,
-            createdAt: existingItem?.createdAt || new Date().toISOString()
-        };
+        const existingIndex = this.items.findIndex(i => i.id === id);
+        const itemData = { id, name, category, price, barcode, description };
 
-        if (id) {
-            const idx = this.items.findIndex(i => i.id === id);
-            if (idx !== -1) this.items[idx] = item;
+        if (existingIndex > -1) {
+            this.items[existingIndex] = itemData;
+            this.showToast('تم تحديث الصنف بنجاح');
         } else {
-            this.items.unshift(item);
+            this.items.push(itemData);
+            this.showToast('تم إضافة الصنف بنجاح');
         }
 
-        this.saveItems();
-        document.getElementById('itemModal').classList.remove('active');
-        this.renderItemsGrid();
-        this.showToast(id ? 'تم تحديث الصنف' : 'تم إضافة الصنف بنجاح');
+        localStorage.setItem('app_items', JSON.stringify(this.items));
+        this.resetItemForm();
+        this.renderItemsTable();
+        this.renderPOSItems();
     },
 
-    // ── Items ──
-    setupItems() {
-        document.getElementById('categoryFilter').addEventListener('change', () => this.renderItemsGrid());
-        document.getElementById('resetItemsBtn').addEventListener('click', () => {
-            if (confirm('هل تريد حذف كل الأصناف وإعادة تعيين الأصناف الافتراضية؟')) {
-                localStorage.removeItem('abou_maheeb_items');
-                this.items = this.defaultItems.map(item => ({
-                    ...item,
-                    id: Date.now().toString() + Math.random().toString(36).substr(2, 5),
-                    barcode: this.generateBarcodeNumber(),
-                    createdAt: new Date().toISOString()
-                }));
-                this.saveItems();
-                this.renderItemsGrid();
-                this.renderDashboard();
-                this.renderBarcodeSelect();
-                this.renderPOSItems();
-                this.showToast('تم إعادة تعيين الأصناف بنجاح', 'success');
+    editItem(id) {
+        const item = this.items.find(i => i.id === id);
+        if (!item) return;
+
+        document.getElementById('itemId').value = item.id;
+        document.getElementById('itemName').value = item.name;
+        document.getElementById('itemCategory').value = item.category;
+        document.getElementById('itemPrice').value = item.price;
+        document.getElementById('itemBarcode').value = item.barcode;
+        document.getElementById('itemDescription').value = item.description || '';
+    },
+
+    deleteItem(id) {
+        if (confirm('هل أنت تأكد من حذف هذا الصنف؟')) {
+            this.items = this.items.filter(i => i.id !== id);
+            localStorage.setItem('app_items', JSON.stringify(this.items));
+            this.renderItemsTable();
+            this.renderPOSItems();
+            this.showToast('تم حذف الصنف', 'warning');
+        }
+    },
+
+    resetItemForm() {
+        const itemForm = document.getElementById('itemForm');
+        if (itemForm) itemForm.reset();
+        document.getElementById('itemId').value = '';
+    },
+
+    renderItemsTable() {
+        const tbody = document.getElementById('itemsTableBody');
+        if (!tbody) return;
+
+        if (this.items.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" class="empty-msg" style="text-align:center;">لا توجد أصناف مسجلة</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = this.items.map(item => `
+            <tr>
+                <td>${item.barcode}</td>
+                <td>${item.name}</td>
+                <td>${item.category}</td>
+                <td>${item.price.toFixed(2)} ر.س</td>
+                <td>
+                    <button class="item-btn edit" onclick="App.editItem('${item.id}')"><i class="fas fa-edit"></i></button>
+                    <button class="item-btn delete" onclick="App.deleteItem('${item.id}')"><i class="fas fa-trash"></i></button>
+                </td>
+            </tr>
+        `).join('');
+    },
+
+    // ── نقطة البيع (POS) ──
+    setupPOS() {
+        const checkoutBtn = document.getElementById('checkoutBtn');
+        if (checkoutBtn) {
+            checkoutBtn.addEventListener('click', () => this.processCheckout());
+        }
+    },
+
+    renderPOSCategories() {
+        const container = document.getElementById('posCategories');
+        if (!container) return;
+
+        const categoriesHtml = ['الكل', ...this.categories].map((cat, idx) => `
+            <button class="category-btn ${idx === 0 ? 'active' : ''}" onclick="App.filterPOSItems('${cat}', this)">${cat}</button>
+        `).join('');
+
+        container.innerHTML = categoriesHtml;
+    },
+
+    renderPOSItems(categoryFilter = 'الكل') {
+        const container = document.getElementById('posItemsGrid');
+        if (!container) return;
+
+        const filtered = categoryFilter === 'الكل' 
+            ? this.items 
+            : this.items.filter(i => i.category === categoryFilter);
+
+        if (filtered.length === 0) {
+            container.innerHTML = '<p class="empty-msg">لا توجد أصناف متاحة</p>';
+            return;
+        }
+
+        container.innerHTML = filtered.map(item => `
+            <div class="pos-item-card" onclick="App.addToCart('${item.id}')">
+                <h4>${item.name}</h4>
+                <span class="price">${item.price.toFixed(2)} ر.س</span>
+            </div>
+        `).join('');
+    },
+
+    filterPOSItems(category, btnElement) {
+        document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+        if (btnElement) btnElement.classList.add('active');
+        this.renderPOSItems(category);
+    },
+
+    addToCart(itemId) {
+        const item = this.items.find(i => i.id === itemId);
+        if (!item) return;
+
+        const existingCartItem = this.cart.find(c => c.id === itemId);
+        if (existingCartItem) {
+            existingCartItem.qty++;
+        } else {
+            this.cart.push({ ...item, qty: 1 });
+        }
+
+        this.renderCart();
+    },
+
+    updateCartQty(itemId, delta) {
+        const cartItem = this.cart.find(c => c.id === itemId);
+        if (!cartItem) return;
+
+        cartItem.qty += delta;
+        if (cartItem.qty <= 0) {
+            this.cart = this.cart.filter(c => c.id !== itemId);
+        }
+
+        this.renderCart();
+    },
+
+    renderCart() {
+        const container = document.getElementById('cartItems');
+        if (!container) return;
+
+        if (this.cart.length === 0) {
+            container.innerHTML = '<p class="empty-msg">السلة فارغة</p>';
+            this.updateCartTotals(0);
+            return;
+        }
+
+        container.innerHTML = this.cart.map(item => `
+            <div class="cart-item">
+                <div class="cart-item-info">
+                    <h4>${item.name}</h4>
+                    <span>${item.price.toFixed(2)} ر.س</span>
+                </div>
+                <div class="cart-item-controls">
+                    <button onclick="App.updateCartQty('${item.id}', -1)">-</button>
+                    <span>${item.qty}</span>
+                    <button onclick="App.updateCartQty('${item.id}', 1)">+</button>
+                </div>
+            </div>
+        `).join('');
+
+        const total = this.cart.reduce((sum, i) => sum + (i.price * i.qty), 0);
+        this.updateCartTotals(total);
+    },
+
+    updateCartTotals(total) {
+        const subtotal = total / 1.15;
+        const tax = total - subtotal;
+
+        const subtotalEl = document.getElementById('cartSubtotal');
+        const taxEl = document.getElementById('cartTax');
+        const totalEl = document.getElementById('cartTotal');
+
+        if (subtotalEl) subtotalEl.textContent = subtotal.toFixed(2) + ' ر.س';
+        if (taxEl) taxEl.textContent = tax.toFixed(2) + ' ر.س';
+        if (totalEl) totalEl.textContent = total.toFixed(2) + ' ر.س';
+    },
+
+    processCheckout() {
+        if (this.cart.length === 0) {
+            this.showToast('السلة فارغة!', 'error');
+            return;
+        }
+
+        const grandTotal = this.cart.reduce((sum, i) => sum + (i.price * i.qty), 0);
+        const subtotal = grandTotal / 1.15;
+        const tax = grandTotal - subtotal;
+
+        const paymentMethodEl = document.getElementById('paymentMethod');
+        const orderChannelEl = document.getElementById('orderChannel');
+
+        const order = {
+            id: 'ORD-' + Date.now(),
+            date: new Date().toISOString(),
+            items: [...this.cart],
+            subtotal: subtotal,
+            tax: tax,
+            total: grandTotal,
+            paymentMethod: paymentMethodEl ? paymentMethodEl.value : 'نقداً',
+            channel: orderChannelEl ? orderChannelEl.value : 'محلي'
+        };
+
+        this.orders.unshift(order);
+        localStorage.setItem('app_orders', JSON.stringify(this.orders));
+
+        this.showReceipt(order);
+        this.cart = [];
+        this.renderCart();
+        this.showToast('تم إتمام الطلب بنجاح');
+    },
+
+    // ── طباعة الفاتورة ──
+    showReceipt(order) {
+        const printWindow = window.open('', '_blank');
+        const itemsHtml = order.items.map(item => `
+            <tr>
+                <td style="text-align:right;">${item.name}</td>
+                <td style="text-align:center;">${item.qty}</td>
+                <td style="text-align:left;">${(item.price * item.qty).toFixed(2)}</td>
+            </tr>
+        `).join('');
+
+        const orderDate = new Date(order.date).toLocaleString('ar-SA');
+
+        printWindow.document.write(`
+            <!DOCTYPE html>
+            <html dir="rtl" lang="ar">
+            <head>
+                <meta charset="UTF-8">
+                <title>فاتورة - ${order.id}</title>
+                <style>
+                    body { font-family: 'Courier New', Courier, monospace; width: 280px; margin: 0 auto; padding: 10px; text-align: center; color: #000; }
+                    .header { margin-bottom: 10px; border-bottom: 1px dashed #000; padding-bottom: 10px; }
+                    .header h2 { margin: 5px 0; font-size: 1.2rem; }
+                    .info { font-size: 0.8rem; text-align: right; margin-bottom: 10px; }
+                    .info div { margin-bottom: 3px; }
+                    table { width: 100%; font-size: 0.85rem; border-collapse: collapse; margin-bottom: 10px; }
+                    th, td { padding: 4px 0; border-bottom: 1px dotted #ccc; }
+                    .totals { font-size: 0.85rem; text-align: left; border-top: 1px dashed #000; padding-top: 5px; }
+                    .totals div { display: flex; justify-content: space-between; margin-bottom: 3px; }
+                    .grand-total { font-weight: bold; font-size: 1rem; border-top: 1px stroke #000; padding-top: 4px; }
+                    .footer { margin-top: 15px; font-size: 0.75rem; border-top: 1px dashed #000; padding-top: 10px; }
+                </style>
+            </head>
+            <body>
+                <div class="header">
+                    ${this.receiptLogo}
+                    <h2>مطعم أبو مهيب</h2>
+                    <p style="margin:2px;font-size:0.8rem;">فاتورة ضريبية مبسطة</p>
+                </div>
+                <div class="info">
+                    <div><strong>رقم الطلب:</strong> ${order.id}</div>
+                    <div><strong>التاريخ:</strong> ${orderDate}</div>
+                    <div><strong>طريقة الدفع:</strong> ${order.paymentMethod}</div>
+                    <div><strong>نوع الطلب:</strong> ${order.channel}</div>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="text-align:right;">الصنف</th>
+                            <th style="text-align:center;">العدد</th>
+                            <th style="text-align:left;">المجموع</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${itemsHtml}
+                    </tbody>
+                </table>
+                <div class="totals">
+                    <div><span>المبلغ الخاضع للضريبة:</span> <span>${order.subtotal.toFixed(2)} ر.س</span></div>
+                    <div><span>ضريبة القيمة المضافة (15%):</span> <span>${order.tax.toFixed(2)} ر.س</span></div>
+                    <div class="grand-total"><span>الإجمالي:</span> <span>${order.total.toFixed(2)} ر.س</span></div>
+                </div>
+                <div class="footer">
+                    <p>شكراً لزيارتكم!</p>
+                </div>
+                <script>
+                    setTimeout(() => { window.print(); window.close(); }, 500);
+                <\/script>
+            </body>
+            </html>
+        `);
+    },
+
+    // ── إدارة الطلبات ──
+    setupOrders() {},
+
+    renderOrdersTable() {
+        const tbody = document.getElementById('ordersTableBody');
+        if (!tbody) return;
+
+        if (this.orders.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" class="empty-msg" style="text-align:center;">لا توجد طلبات مسجلة</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = this.orders.map(order => `
+            <tr>
+                <td>${order.id}</td>
+                <td>${new Date(order.date).toLocaleString('ar-SA')}</td>
+                <td>${order.channel} / ${order.paymentMethod}</td>
+                <td>${order.items.map(i => `${i.name} (${i.qty})`).join(', ')}</td>
+                <td><strong>${order.total.toFixed(2)} ر.س</strong></td>
+                <td>
+                    <button class="item-btn" onclick="App.showReceipt(App.orders.find(o => o.id === '${order.id}'))">
+                        <i class="fas fa-print"></i>
+                    </button>
+                </td>
+            </tr>
+        `).join('');
+    },
+
+    // ── لوحة التحكم ──
+    renderDashboard() {
+        const totalSales = this.orders.reduce((sum, o) => sum + o.total, 0);
+        const totalOrders = this.orders.length;
+        const totalItemsCount = this.items.length;
+
+        const totalSalesEl = document.getElementById('dashTotalSales');
+        const totalOrdersEl = document.getElementById('dashTotalOrders');
+        const totalItemsEl = document.getElementById('dashTotalItems');
+
+        if (totalSalesEl) totalSalesEl.textContent = totalSales.toFixed(2) + ' ر.س';
+        if (totalOrdersEl) totalOrdersEl.textContent = totalOrders;
+        if (totalItemsEl) totalItemsEl.textContent = totalItemsCount;
+    },
+
+    // ── البحث ──
+    setupSearch() {
+        const searchInput = document.getElementById('globalSearch');
+        if (!searchInput) return;
+
+        searchInput.addEventListener('input', (e) => {
+            const query = e.target.value.trim().toLowerCase();
+            if (!query) return;
+
+            if (document.getElementById('page-items').classList.contains('active')) {
+                const filtered = this.items.filter(i => i.name.toLowerCase().includes(query) || i.barcode.includes(query));
+                this.renderFilteredItems(filtered);
             }
         });
     },
 
-    renderItemsGrid() {
+    renderFilteredItems(filteredItems) {
         const grid = document.getElementById('itemsGrid');
-        const filter = document.getElementById('categoryFilter').value;
-        let filtered = this.items;
+        if (!grid) return;
 
-        if (filter !== 'all') {
-            filtered = this.items.filter(i => i.category === filter);
-        }
-
-        if (filtered.length === 0) {
-            grid.innerHTML = '<p class="empty-msg">لا توجد أصناف في هذا التصنيف</p>';
+        if (filteredItems.length === 0) {
+            grid.innerHTML = '<p class="empty-msg">لا توجد نتائج تطابق البحث</p>';
             return;
         }
 
-        grid.innerHTML = filtered.map(item => `
+        grid.innerHTML = filteredItems.map(item => `
             <div class="item-card">
-                <div class="item-card-header" ${item.image ? `style="background:url('${item.image}') center/cover;min-height:140px;"` : ''}>
-                    ${!item.image ? `<span class="item-category-badge">${item.category}</span>` : `<span class="item-category-badge" style="background:rgba(0,0,0,0.6);">${item.category}</span>`}
+                <div class="item-card-header">
+                    <span class="item-category-badge">${item.category}</span>
                     <div class="item-btns">
-                        <button class="item-btn edit" onclick="App.editItem('${item.id}')">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="item-btn delete" onclick="App.deleteItem('${item.id}')">
-                            <i class="fas fa-trash"></i>
-                        </button>
+                        <button class="item-btn edit" onclick="App.editItem('${item.id}')"><i class="fas fa-edit"></i></button>
+                        <button class="item-btn delete" onclick="App.deleteItem('${item.id}')"><i class="fas fa-trash"></i></button>
                     </div>
                 </div>
                 <div class="item-card-body">
@@ -296,536 +430,36 @@ const App = {
                     <div class="item-card-actions">
                         <span class="item-price">${item.price.toFixed(2)} ر.س</span>
                     </div>
-                    ${item.sizes ? `<p style="font-size:0.75rem;color:var(--text-light);margin-top:8px;"><i class="fas fa-layer-group"></i> ${item.sizes}</p>` : ''}
-                    <div class="item-barcode">
-                        <svg class="barcode-svg" data-barcode="${item.barcode}"></svg>
-                    </div>
                 </div>
             </div>
         `).join('');
-
-        grid.querySelectorAll('.barcode-svg').forEach(svg => {
-            JsBarcode(svg, svg.dataset.barcode, {
-                format: 'CODE128',
-                width: 1.5,
-                height: 40,
-                displayValue: true,
-                fontSize: 12,
-                margin: 5
-            });
-        });
     },
 
-    editItem(id) {
-        const item = this.items.find(i => i.id === id);
-        if (!item) return;
-
-        document.getElementById('modalTitle').textContent = 'تعديل الصنف';
-        document.getElementById('itemId').value = item.id;
-        document.getElementById('itemName').value = item.name;
-        document.getElementById('itemCategory').value = item.category;
-        document.getElementById('itemBarcode').value = item.barcode;
-        document.getElementById('itemPrice').value = item.price;
-        document.getElementById('itemCost').value = item.cost || '';
-        document.getElementById('itemDescription').value = item.description || '';
-        document.getElementById('itemSizes').value = item.sizes || '';
-
-        const imgPreview = document.getElementById('imagePreview');
-        const placeholder = document.getElementById('imagePlaceholder');
-        const removeBtn = document.getElementById('removeImage');
-
-        if (item.image) {
-            imgPreview.src = item.image;
-            imgPreview.style.display = 'block';
-            placeholder.style.display = 'none';
-            removeBtn.style.display = 'inline-flex';
-        } else {
-            imgPreview.style.display = 'none';
-            placeholder.style.display = 'block';
-            removeBtn.style.display = 'none';
-        }
-        document.getElementById('itemImage').value = '';
-
-        document.getElementById('itemModal').classList.add('active');
-    },
-
-    deleteItem(id) {
-        if (!confirm('هل أنت متأكد من حذف هذا الصنف؟')) return;
-        this.items = this.items.filter(i => i.id !== id);
-        this.saveItems();
-        this.renderItemsGrid();
-        this.showToast('تم حذف الصنف');
-    },
-
-    // ── Barcode Generator ──
-    setupBarcodeGenerator() {
-        document.getElementById('printBarcodeBtn').addEventListener('click', () => this.printBarcodes());
-        document.getElementById('selectAllBarcode').addEventListener('click', () => {
-            document.querySelectorAll('.barcode-check').forEach(cb => cb.checked = true);
-        });
-    },
-
-    renderBarcodeSelect() {
-        const container = document.getElementById('barcodeItemSelect');
-        const preview = document.getElementById('barcodePreview');
-
-        if (this.items.length === 0) {
-            container.innerHTML = '<p class="empty-msg">لا توجد أصناف متاحة. أضف أصنافاً أولاً</p>';
-            preview.innerHTML = '';
-            return;
-        }
-
-        container.innerHTML = this.items.map(item => `
-            <div class="barcode-item-row">
-                <input type="checkbox" class="barcode-check" value="${item.id}" id="bc-${item.id}">
-                <label for="bc-${item.id}">${item.name} (${item.category}) - ${item.barcode}</label>
-            </div>
-        `).join('');
-
-        preview.innerHTML = '';
-    },
-
-    printBarcodes() {
-        const selected = Array.from(document.querySelectorAll('.barcode-check:checked')).map(cb => cb.value);
-        if (selected.length === 0) {
-            this.showToast('اختر أصنافاً للطباعة', 'warning');
-            return;
-        }
-
-        const preview = document.getElementById('barcodePreview');
-        const itemsToPrint = this.items.filter(i => selected.includes(i.id));
-
-        preview.innerHTML = itemsToPrint.map(item => `
-            <div class="barcode-card">
-                <h4>${item.name}</h4>
-                <p>${item.price.toFixed(2)} ر.س</p>
-                <svg class="print-barcode" data-barcode="${item.barcode}"></svg>
-            </div>
-        `).join('');
-
-        preview.querySelectorAll('.print-barcode').forEach(svg => {
-            JsBarcode(svg, svg.dataset.barcode, {
-                format: 'CODE128',
-                width: 2,
-                height: 60,
-                displayValue: true,
-                fontSize: 14,
-                margin: 10
-            });
-        });
-
-        setTimeout(() => {
-            const printContent = preview.innerHTML;
-            const printWindow = window.open('', '_blank');
-            printWindow.document.write(`
-                <!DOCTYPE html>
-                <html>
-                <head>
-                    <title>باركود - أبو مهيب</title>
-                    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"><\/script>
-                    <style>
-                        body { font-family: Arial, sans-serif; direction: rtl; padding: 20px; }
-                        .barcode-card { text-align: center; padding: 15px; border: 1px dashed #ccc; margin: 10px; display: inline-block; width: 280px; }
-                        .barcode-card h4 { margin: 0 0 5px 0; }
-                        .barcode-card p { color: #e65100; font-weight: bold; font-size: 1.1rem; margin: 5px 0; }
-                    </style>
-                </head>
-                <body>
-                    <div id="content">${printContent}</div>
-                    <script>
-                        document.querySelectorAll('.print-barcode').forEach(svg => {
-                            JsBarcode(svg, svg.dataset.barcode, {
-                                format: 'CODE128', width: 2, height: 60,
-                                displayValue: true, fontSize: 14, margin: 10
-                            });
-                        });
-                        setTimeout(() => { window.print(); }, 500);
-                    <\/script>
-                </body>
-                </html>
-            `);
-        }, 300);
-    },
-
-    // ── Barcode Scanner ──
-    setupBarcodeScanner() {
-        document.getElementById('startScanBtn').addEventListener('click', () => this.startScanner());
-        document.getElementById('stopScanBtn').addEventListener('click', () => this.stopScanner());
-        document.getElementById('manualSearchBtn').addEventListener('click', () => {
-            const code = document.getElementById('manualBarcode').value.trim();
-            if (code) this.lookupBarcode(code);
-        });
-        document.getElementById('manualBarcode').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                const code = e.target.value.trim();
-                if (code) this.lookupBarcode(code);
-            }
-        });
-    },
-
-    startScanner() {
-        document.getElementById('startScanBtn').style.display = 'none';
-        document.getElementById('stopScanBtn').style.display = 'inline-flex';
-
-        this.html5QrCode = new Html5Qrcode('qr-reader');
-        this.scanning = true;
-
-        this.html5QrCode.start(
-            { facingMode: 'environment' },
-            { fps: 10, qrbox: { width: 250, height: 150 } },
-            (decodedText) => {
-                if (this.scanning) {
-                    this.lookupBarcode(decodedText);
-                    this.stopScanner();
-                }
-            },
-            () => {}
-        ).catch(() => {
-            document.getElementById('qr-reader').innerHTML = '<p style="color:white;padding:40px;">لا يمكن الوصول للكاميرا. استخدم البحث اليدوي</p>';
-            document.getElementById('startScanBtn').style.display = 'inline-flex';
-            document.getElementById('stopScanBtn').style.display = 'none';
-        });
-    },
-
-    stopScanner() {
-        this.scanning = false;
-        if (this.html5QrCode) {
-            this.html5QrCode.stop().then(() => {
-                this.html5QrCode.clear();
-                document.getElementById('startScanBtn').style.display = 'inline-flex';
-                document.getElementById('stopScanBtn').style.display = 'none';
-            }).catch(() => {});
-        }
-    },
-
-    lookupBarcode(code) {
-        const item = this.items.find(i => i.barcode === code);
-        const info = document.getElementById('scannedItemInfo');
-
-        if (!item) {
-            info.innerHTML = `
-                <div style="text-align:center;padding:20px;color:var(--danger);">
-                    <i class="fas fa-times-circle" style="font-size:2rem;"></i>
-                    <p style="margin-top:10px;">لم يتم العثور على صنف بالباركود: ${code}</p>
-                </div>
-            `;
-            return;
-        }
-
-        info.innerHTML = `
-            <div class="scan-item-detail"><strong>الاسم:</strong> <span>${item.name}</span></div>
-            <div class="scan-item-detail"><strong>التصنيف:</strong> <span>${item.category}</span></div>
-            <div class="scan-item-detail"><strong>السعر:</strong> <span style="color:var(--primary);font-weight:800;">${item.price.toFixed(2)} ر.س</span></div>
-            <div class="scan-item-detail"><strong>الباركود:</strong> <span>${item.barcode}</span></div>
-            ${item.description ? `<div class="scan-item-detail"><strong>الوصف:</strong> <span>${item.description}</span></div>` : ''}
-            ${item.sizes ? `<div class="scan-item-detail"><strong>الأحجام:</strong> <span>${item.sizes}</span></div>` : ''}
-        `;
-    },
-
-    // ── POS ──
-    setupPOS() {
-        document.getElementById('posSearch').addEventListener('input', (e) => this.renderPOSItems(e.target.value));
-        document.querySelectorAll('.pos-cat').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('.pos-cat').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                this.renderPOSItems(document.getElementById('posSearch').value);
-            });
-        });
-        document.getElementById('clearCart').addEventListener('click', () => this.clearCart());
-        document.getElementById('completeOrder').addEventListener('click', () => this.completeOrder());
-    },
-
-    renderPOSItems(search = '') {
-        const grid = document.getElementById('posItemsGrid');
-        const activeCat = document.querySelector('.pos-cat.active')?.dataset.cat || 'all';
-
-        let filtered = this.items;
-        if (activeCat !== 'all') {
-            filtered = filtered.filter(i => i.category === activeCat);
-        }
-        if (search) {
-            filtered = filtered.filter(i => i.name.includes(search) || i.barcode.includes(search));
-        }
-
-        if (filtered.length === 0) {
-            grid.innerHTML = '<p class="empty-msg">لا توجد أصناف</p>';
-            return;
-        }
-
-        const icons = { 'برجر': 'fa-burger', 'مشويات': 'fa-fire', 'مقبلات': 'fa-cookie-bite', 'مشروبات': 'fa-glass-water', 'أطباق جانبية': 'fa-bowl-food', 'حلويات': 'fa-ice-cream' };
-
-        grid.innerHTML = filtered.map(item => `
-            <div class="pos-item" onclick="App.addToCart('${item.id}')">
-                ${item.image ? `<img src="${item.image}" class="pos-item-img" alt="${item.name}">` : `<div class="pos-item-icon"><i class="fas ${icons[item.category] || 'fa-utensils'}"></i></div>`}
-                <h4>${item.name}</h4>
-                <div class="pos-item-price">${item.price.toFixed(2)} ر.س</div>
-            </div>
-        `).join('');
-    },
-
-    addToCart(itemId) {
-        const item = this.items.find(i => i.id === itemId);
-        if (!item) return;
-
-        const existing = this.cart.find(c => c.id === itemId);
-        if (existing) {
-            existing.qty++;
-        } else {
-            this.cart.push({ ...item, qty: 1 });
-        }
-        this.renderCart();
-        this.showToast(`تمت إضافة ${item.name}`);
-    },
-
-    renderCart() {
-        const container = document.getElementById('cartItems');
-
-        if (this.cart.length === 0) {
-            container.innerHTML = '<p class="empty-msg">السلة فارغة</p>';
-        } else {
-            container.innerHTML = this.cart.map((item, idx) => `
-                <div class="cart-item">
-                    <div class="cart-item-info">
-                        <h4>${item.name}</h4>
-                        <p>${item.price.toFixed(2)} ر.س</p>
-                    </div>
-                    <div class="cart-item-qty">
-                        <button class="qty-btn" onclick="App.updateQty(${idx}, -1)">-</button>
-                        <span>${item.qty}</span>
-                        <button class="qty-btn" onclick="App.updateQty(${idx}, 1)">+</button>
-                    </div>
-                    <span class="cart-item-price">${(item.price * item.qty).toFixed(2)} ر.س</span>
-                </div>
-            `).join('');
-        }
-
-        const total = this.cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
-        const subtotal = total / 1.15;
-        const tax = total - subtotal;
-
-        document.getElementById('cartSubtotal').textContent = subtotal.toFixed(2) + ' ر.س';
-        document.getElementById('cartTax').textContent = tax.toFixed(2) + ' ر.س';
-        document.getElementById('cartTotal').textContent = total.toFixed(2) + ' ر.س';
-    },
-
-    updateQty(idx, delta) {
-        this.cart[idx].qty += delta;
-        if (this.cart[idx].qty <= 0) {
-            this.cart.splice(idx, 1);
-        }
-        this.renderCart();
-    },
-
-    clearCart() {
-        this.cart = [];
-        this.renderCart();
-    },
-
-    setPaymentMethod(method, btn) {
-        this.paymentMethod = method;
-        document.querySelectorAll('.payment-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-    },
-
-    setChannel(channel, btn) {
-        this.orderChannel = channel;
-        document.querySelectorAll('.channel-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-    },
-
-    completeOrder() {
-        if (this.cart.length === 0) {
-            this.showToast('السلة فارغة!', 'warning');
-            return;
-        }
-
-        const total = this.cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
-        const subtotal = total / 1.15;
-        const tax = total - subtotal;
-
-        const order = {
-            id: 'ORD-' + Date.now().toString(36).toUpperCase(),
-            items: [...this.cart],
-            subtotal,
-            tax,
-            total,
-            paymentMethod: this.paymentMethod,
-            channel: this.orderChannel,
-            date: new Date().toISOString(),
-            status: 'completed'
-        };
-
-        this.orders.unshift(order);
-        this.saveOrders();
-        this.showReceipt(order);
-        this.cart = [];
-        this.renderCart();
-        this.showToast('تم إتمام الطلب بنجاح!');
-    },
-
-    receiptLogo: `<svg viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg" style="width:100px;height:100px;margin:0 auto 8px;display:block;">
-        <defs>
-            <linearGradient id="rf" x1="0%" y1="100%" x2="100%" y2="0%"><stop offset="0%" stop-color="#bf360c"/><stop offset="50%" stop-color="#e65100"/><stop offset="100%" stop-color="#ff9e40"/></linearGradient>
-            <linearGradient id="rg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#ff9e40"/><stop offset="100%" stop-color="#ffd54f"/></linearGradient>
-            <linearGradient id="rd" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#1a1a2e"/><stop offset="100%" stop-color="#0f0f23"/></linearGradient>
-        </defs>
-        <circle cx="120" cy="120" r="115" fill="none" stroke="url(#rg)" stroke-width="3"/>
-        <circle cx="120" cy="120" r="108" fill="url(#rd)"/>
-        <circle cx="120" cy="120" r="100" fill="none" stroke="url(#rg)" stroke-width="1.5" opacity="0.5"/>
-    </svg>`,
-
-    showReceipt(order) {
-        const receiptContent = document.getElementById('receiptContent');
-        const formattedDate = new Date(order.date).toLocaleString('ar-SA');
-
-        receiptContent.innerHTML = `
-            ${this.receiptLogo}
-            <h2 style="text-align:center;margin:0 0 4px;color:#e65100;">أبو مهيب</h2>
-            <p style="text-align:center;margin:0 0 12px;color:#666;font-size:0.9rem;">برجر ومشويات</p>
-            <p style="text-align:center;margin:0 0 12px;font-size:0.85rem;color:#888;">${formattedDate}</p>
-
-            <div style="margin-bottom:12px;font-size:0.9rem;">
-                <strong>رقم الطلب:</strong> ${order.id}<br>
-                <strong>القناة:</strong> ${order.channel}<br>
-                <strong>الدفع:</strong> ${order.paymentMethod}
-            </div>
-
-            <hr style="border:1px dashed #ccc;margin:12px 0;">
-
-            <div style="margin-bottom:12px;">
-                ${order.items.map(item => `
-                    <div style="display:flex;justify-content:space-between;margin-bottom:6px;font-size:0.9rem;">
-                        <span>${item.name} x${item.qty}</span>
-                        <span>${(item.price * item.qty).toFixed(2)} ر.س</span>
-                    </div>
-                `).join('')}
-            </div>
-
-            <hr style="border:1px dashed #ccc;margin:12px 0;">
-
-            <div style="font-size:0.9rem;margin-bottom:4px;display:flex;justify-content:space-between;">
-                <span>المجموع الفرعي:</span>
-                <span>${order.subtotal.toFixed(2)} ر.س</span>
-            </div>
-            <div style="font-size:0.9rem;margin-bottom:8px;display:flex;justify-content:space-between;">
-                <span>الضريبة (15%):</span>
-                <span>${order.tax.toFixed(2)} ر.س</span>
-            </div>
-
-            <hr style="border:1px dashed #ccc;margin:12px 0;">
-
-            <div style="font-size:1.2rem;font-weight:bold;display:flex;justify-content:space-between;color:#e65100;">
-                <span>الإجمالي:</span>
-                <span>${order.total.toFixed(2)} ر.س</span>
-            </div>
-
-            <hr style="border:1px dashed #ccc;margin:12px 0;">
-
-            <!-- قسم الباركود لعرض المنيو -->
-            <div style="text-align: center; margin-top: 15px;">
-                <p style="margin-bottom: 8px; font-weight: bold;">شكراً لزيارتكم!</p>
-                <img src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=https://almalamh.github.io/abou-maheeb-menu/" alt="QR" style="width: 150px; height: 150px; margin: 8px auto; display: block;" />
-                <p style="font-size: 13px; color: #555; margin-top: 5px;">امسح الكود لعرض القائمة</p>
-            </div>
-        `;
-
-        document.getElementById('receiptModal').classList.add('active');
-
-        document.getElementById('printReceipt').onclick = () => {
-            window.print();
-        };
-
-        document.getElementById('closeReceipt').onclick = () => {
-            document.getElementById('receiptModal').classList.remove('active');
-        };
-    },
-
-    // ── Orders Table ──
-    setupOrders() {
-        // أي تجهيزات إضافية لشاشة الطلبات
-    },
-
-    renderOrdersTable() {
-        const tbody = document.getElementById('ordersTableBody');
-        if (!tbody) return;
-
-        if (this.orders.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">لا توجد طلبات مسجلة</td></tr>';
-            return;
-        }
-
-        tbody.innerHTML = this.orders.map(order => `
-            <tr>
-                <td>${order.id}</td>
-                <td>${new Date(order.date).toLocaleString('ar-SA')}</td>
-                <td>${order.channel}</td>
-                <td>${order.paymentMethod}</td>
-                <td>${order.total.toFixed(2)} ر.س</td>
-                <td><button class="btn btn-secondary" onclick='App.showReceipt(${JSON.stringify(order)})'>عرض الفاتورة</button></td>
-            </tr>
-        `).join('');
-    },
-
-    // ── Dashboard ──
-    renderDashboard() {
-        const totalSales = this.orders.reduce((sum, o) => sum + o.total, 0);
-        const totalOrders = this.orders.length;
-        const totalItems = this.items.length;
-
-        const salesElem = document.getElementById('dashTotalSales');
-        const ordersElem = document.getElementById('dashTotalOrders');
-        const itemsElem = document.getElementById('dashTotalItems');
-
-        if (salesElem) salesElem.textContent = totalSales.toFixed(2) + ' ر.س';
-        if (ordersElem) ordersElem.textContent = totalOrders;
-        if (itemsElem) itemsElem.textContent = totalItems;
-    },
-
-    // ── Search ──
-    setupSearch() {
-        const globalSearch = document.getElementById('globalSearch');
-        if (globalSearch) {
-            globalSearch.addEventListener('input', (e) => {
-                const query = e.target.value.trim();
-                if (query) {
-                    this.renderPOSItems(query);
-                }
-            });
-        }
-    },
-
-    // ── Toast Notifications ──
+    // ── الإشعارات ──
     showToast(message, type = 'success') {
         let toast = document.getElementById('toast');
         if (!toast) {
             toast = document.createElement('div');
             toast.id = 'toast';
+            toast.style.cssText = `
+                position: fixed; bottom: 20px; right: 20px; background: #323232; color: #fff;
+                padding: 12px 24px; border-radius: 8px; z-index: 9999; font-size: 0.9rem;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15); transition: opacity 0.3s ease;
+            `;
             document.body.appendChild(toast);
         }
 
-        toast.style.position = 'fixed';
-        toast.style.bottom = '24px';
-        toast.style.left = '24px';
-        toast.style.background = type === 'warning' ? '#fdcb6e' : type === 'error' ? '#d63031' : '#00b894';
-        toast.style.color = type === 'warning' ? '#2d3436' : 'white';
-        toast.style.padding = '12px 24px';
-        toast.style.borderRadius = '8px';
-        toast.style.fontFamily = "'Cairo', sans-serif";
-        toast.style.fontSize = '0.9rem';
-        toast.style.fontWeight = '600';
-        toast.style.zIndex = '9999';
-        toast.style.boxShadow = '0 4px 12px rgba(0,0,0,0.2)';
-
+        toast.style.background = type === 'warning' ? '#e65100' : (type === 'error' ? '#c62828' : '#2e7d32');
         toast.textContent = message;
         toast.style.opacity = '1';
-        toast.style.transition = 'opacity 0.3s';
 
         setTimeout(() => {
             toast.style.opacity = '0';
-            setTimeout(() => toast.remove(), 300);
-        }, 2500);
+        }, 3000);
     }
 };
 
-document.addEventListener('DOMContentLoaded', () => App.init());
+// تشغيل التطبيق عند تحميل DOM
+document.addEventListener('DOMContentLoaded', () => {
+    App.init();
+});
