@@ -85,7 +85,7 @@ const App = {
         { name: "كيكة الشوكولاتة", category: "حلويات", price: 11.50, cost: 4, description: "كيكة شوكولاتة طرية", sizes: "standard", image: "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=500" }
     ],
 
-    // ── localStorage (محلي) ──
+    // ── localStorage ──
     loadData() {
         this.items = JSON.parse(localStorage.getItem('abou_maheeb_items')) || [];
         this.orders = JSON.parse(localStorage.getItem('abou_maheeb_orders')) || [];
@@ -166,7 +166,6 @@ const App = {
             document.getElementById('itemBarcode').value = this.generateBarcodeNumber();
         });
 
-        // Image upload
         const uploadArea = document.getElementById('imageUploadArea');
         const fileInput = document.getElementById('itemImage');
         const preview = document.getElementById('imagePreview');
@@ -673,332 +672,160 @@ const App = {
         </defs>
         <circle cx="120" cy="120" r="115" fill="none" stroke="url(#rg)" stroke-width="3"/>
         <circle cx="120" cy="120" r="108" fill="url(#rd)"/>
-        <circle cx="120" cy="120" r="100" fill="none" stroke="url(#rg)" stroke-width="1.5" opacity="0.4"/>
-        <path id="rt" d="M 35 120 A 85 85 0 0 1 205 120" fill="none"/>
-        <text fill="url(#rg)" font-family="Cairo,Arial,sans-serif" font-size="22" font-weight="800" letter-spacing="4"><textPath href="#rt" startOffset="50%" text-anchor="middle">أبو مهيب</textPath></text>
-        <path id="rb" d="M 35 125 A 85 85 0 0 0 205 125" fill="none"/>
-        <text fill="url(#rg)" font-family="Cairo,Arial,sans-serif" font-size="13" font-weight="600" letter-spacing="2" opacity="0.7"><textPath href="#rb" startOffset="50%" text-anchor="middle">برجر ومشويات</textPath></text>
-        <circle cx="32" cy="122" r="3.5" fill="url(#rg)" opacity="0.8"/><circle cx="208" cy="122" r="3.5" fill="url(#rg)" opacity="0.8"/>
-        <g transform="translate(120,105)">
-            <path d="M0,-35 C-5,-25 -28,0 -28,20 C-28,33 -16,42 0,45 C16,42 28,33 28,20 C28,0 5,-25 0,-35 Z" fill="url(#rf)"/>
-            <path d="M0,-15 C-3,-8 -16,5 -16,17 C-16,26 -9,31 0,33 C9,31 16,26 16,17 C16,5 3,-8 0,-15 Z" fill="#ffcc80" opacity="0.7"/>
-            <path d="M0,0 C-2,5 -8,12 -8,20 C-8,26 -4,29 0,30 C4,29 8,26 8,20 C8,12 2,5 0,0 Z" fill="#fff3e0" opacity="0.8"/>
-        </g>
-        <line x1="75" y1="158" x2="165" y2="158" stroke="url(#rg)" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
-        <line x1="80" y1="165" x2="160" y2="165" stroke="url(#rg)" stroke-width="2" stroke-linecap="round" opacity="0.35"/>
-        <line x1="85" y1="172" x2="155" y2="172" stroke="url(#rg)" stroke-width="2" stroke-linecap="round" opacity="0.2"/>
+        <circle cx="120" cy="120" r="100" fill="none" stroke="url(#rg)" stroke-width="1.5" opacity="0.5"/>
     </svg>`,
 
     showReceipt(order) {
-        const modal = document.getElementById('receiptModal');
-        const content = document.getElementById('receiptContent');
+        const receiptContent = document.getElementById('receiptContent');
+        const formattedDate = new Date(order.date).toLocaleString('ar-SA');
 
-        const now = new Date(order.date);
-        const dateStr = now.toLocaleDateString('ar-SA');
-        const timeStr = now.toLocaleTimeString('ar-SA');
-
-        content.innerHTML = `
+        receiptContent.innerHTML = `
             ${this.receiptLogo}
-            <h2>أبو مهيب</h2>
-            <p>برجر ومشويات</p>
-            <p>${dateStr} - ${timeStr}</p>
-            <p style="margin-top:8px;font-weight:bold;">رقم الطلب: ${order.id}</p>
-            <p><i class="fas fa-store"></i> القناة: ${order.channel || 'محل'}</p>
-            <p><i class="fas fa-credit-card"></i> الدفع: ${order.paymentMethod || 'كاش'}</p>
+            <h2 style="text-align:center;margin:0 0 4px;color:#e65100;">أبو مهيب</h2>
+            <p style="text-align:center;margin:0 0 12px;color:#666;font-size:0.9rem;">برجر ومشويات</p>
+            <p style="text-align:center;margin:0 0 12px;font-size:0.85rem;color:#888;">${formattedDate}</p>
+
+            <div style="margin-bottom:12px;font-size:0.9rem;">
+                <strong>رقم الطلب:</strong> ${order.id}<br>
+                <strong>القناة:</strong> ${order.channel}<br>
+                <strong>الدفع:</strong> ${order.paymentMethod}
+            </div>
+
             <hr style="border:1px dashed #ccc;margin:12px 0;">
-            <div class="receipt-items">
+
+            <div style="margin-bottom:12px;">
                 ${order.items.map(item => `
-                    <div class="receipt-item">
+                    <div style="display:flex;justify-content:space-between;margin-bottom:6px;font-size:0.9rem;">
                         <span>${item.name} x${item.qty}</span>
                         <span>${(item.price * item.qty).toFixed(2)} ر.س</span>
                     </div>
                 `).join('')}
             </div>
-            <div class="receipt-item">
-                <span>المجموع الفرعي</span>
+
+            <hr style="border:1px dashed #ccc;margin:12px 0;">
+
+            <div style="font-size:0.9rem;margin-bottom:4px;display:flex;justify-content:space-between;">
+                <span>المجموع الفرعي:</span>
                 <span>${order.subtotal.toFixed(2)} ر.س</span>
             </div>
-            <div class="receipt-item">
-                <span>الضريبة (15%)</span>
+            <div style="font-size:0.9rem;margin-bottom:8px;display:flex;justify-content:space-between;">
+                <span>الضريبة (15%):</span>
                 <span>${order.tax.toFixed(2)} ر.س</span>
             </div>
-            <div class="receipt-total">
-                <span>الإجمالي</span>
+
+            <hr style="border:1px dashed #ccc;margin:12px 0;">
+
+            <div style="font-size:1.2rem;font-weight:bold;display:flex;justify-content:space-between;color:#e65100;">
+                <span>الإجمالي:</span>
                 <span>${order.total.toFixed(2)} ر.س</span>
             </div>
+
             <hr style="border:1px dashed #ccc;margin:12px 0;">
-           <div style="text-align: center; margin-top: 15px;">
-  <p style="margin-bottom: 8px; font-weight: bold;">شكراً لزيارتكم!</p>
-  <img src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=https://almalamh.github.io/abou-maheeb-menu/" alt="QR" style="width: 150px; height: 150px; margin: 8px auto; display: block;" />
-  <p style="font-size: 13px; color: #555; margin-top: 5px;">امسح الكود لعرض القائمة</p>
-</div>
+
+            <!-- قسم الباركود لعرض المنيو -->
+            <div style="text-align: center; margin-top: 15px;">
+                <p style="margin-bottom: 8px; font-weight: bold;">شكراً لزيارتكم!</p>
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=https://almalamh.github.io/abou-maheeb-menu/" alt="QR" style="width: 150px; height: 150px; margin: 8px auto; display: block;" />
+                <p style="font-size: 13px; color: #555; margin-top: 5px;">امسح الكود لعرض القائمة</p>
+            </div>
         `;
 
-        modal.classList.add('active');
+        document.getElementById('receiptModal').classList.add('active');
 
-        document.getElementById('closeReceipt').onclick = () => modal.classList.remove('active');
         document.getElementById('printReceipt').onclick = () => {
-            const printWindow = window.open('', '_blank');
-            printWindow.document.write(`
-                <!DOCTYPE html>
-                <html>
-                <head><title>فاتورة - أبو مهيب</title>
-                <style>
-                    body { font-family: Arial; direction: rtl; text-align: center; padding: 20px; }
-                    .receipt-item { display:flex; justify-content:space-between; padding:4px 0; border-bottom:1px dotted #ccc; }
-                    .total { font-weight:bold; font-size:1.2rem; border-top:2px solid #000; margin-top:8px; padding-top:8px; }
-                </style>
-                </head>
-                <body>
-                    ${this.receiptLogo}
-                    <h2>أبو مهيب</h2>
-                    <p>برجر ومشويات</p>
-                    <p>${dateStr} - ${timeStr}</p>
-                    <p><strong>${order.id}</strong></p>
-                    <p>القناة: ${order.channel || 'محل'} | الدفع: ${order.paymentMethod || 'كاش'}</p>
-                    <hr>
-                    ${order.items.map(item => `<div class="receipt-item"><span>${item.name} x${item.qty}</span><span>${(item.price * item.qty).toFixed(2)} ر.س</span></div>`).join('')}
-                    <div class="receipt-item"><span>المجموع الفرعي</span><span>${order.subtotal.toFixed(2)} ر.س</span></div>
-                    <div class="receipt-item"><span>الضريبة</span><span>${order.tax.toFixed(2)} ر.س</span></div>
-                    <div class="receipt-item total"><span>الإجمالي</span><span>${order.total.toFixed(2)} ر.س</span></div>
-                    <hr>
-                    <p>شكراً لزيارتكم!</p>
-                    <script>window.onload=function(){window.print();}<\/script>
-                </body>
-                </html>
-            `);
+            window.print();
+        };
+
+        document.getElementById('closeReceipt').onclick = () => {
+            document.getElementById('receiptModal').classList.remove('active');
         };
     },
 
-    // ── Orders ──
+    // ── Orders Table ──
     setupOrders() {
-        document.getElementById('clearOrders').addEventListener('click', () => {
-            if (confirm('هل أنت متأكد من مسح جميع الطلبات؟')) {
-                this.orders = [];
-                this.saveOrders();
-                this.renderOrdersTable();
-                this.showToast('تم مسح سجل الطلبات');
-            }
-        });
+        // أي تجهيزات إضافية لشاشة الطلبات
     },
 
     renderOrdersTable() {
-        const tbody = document.getElementById('ordersBody');
-        const noMsg = document.getElementById('noOrdersMsg');
+        const tbody = document.getElementById('ordersTableBody');
+        if (!tbody) return;
 
         if (this.orders.length === 0) {
-            tbody.innerHTML = '';
-            noMsg.style.display = 'block';
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">لا توجد طلبات مسجلة</td></tr>';
             return;
         }
 
-        noMsg.style.display = 'none';
-        tbody.innerHTML = this.orders.map(order => {
-            const date = new Date(order.date);
-            const dateStr = date.toLocaleDateString('ar-SA') + ' ' + date.toLocaleTimeString('ar-SA');
-            const itemsStr = order.items.map(i => `${i.name} x${i.qty}`).join(', ');
-
-            return `
-                <tr>
-                    <td><strong>${order.id}</strong></td>
-                    <td>${dateStr}</td>
-                    <td>${itemsStr}</td>
-                    <td><span class="status-badge ${order.channel === 'هنجرستيشن' ? 'hunger' : 'dine-in'}">${order.channel || 'محل'}</span></td>
-                    <td><span class="status-badge ${order.paymentMethod === 'شبكة' ? 'network' : 'cash'}">${order.paymentMethod || 'كاش'}</span></td>
-                    <td><strong style="color:var(--primary);">${order.total.toFixed(2)} ر.س</strong></td>
-                    <td><span class="status-badge completed">مكتمل</span></td>
-                    <td><button class="item-btn delete" onclick="App.deleteOrder('${order.id}')"><i class="fas fa-trash"></i></button></td>
-                </tr>
-            `;
-        }).join('');
-    },
-
-    deleteOrder(id) {
-        if (!confirm('هل أنت متأكد من حذف هذا الطلب؟')) return;
-        this.orders = this.orders.filter(o => o.id !== id);
-        this.saveOrders();
-        this.renderOrdersTable();
-        this.showToast('تم حذف الطلب');
+        tbody.innerHTML = this.orders.map(order => `
+            <tr>
+                <td>${order.id}</td>
+                <td>${new Date(order.date).toLocaleString('ar-SA')}</td>
+                <td>${order.channel}</td>
+                <td>${order.paymentMethod}</td>
+                <td>${order.total.toFixed(2)} ر.س</td>
+                <td><button class="btn btn-secondary" onclick='App.showReceipt(${JSON.stringify(order)})'>عرض الفاتورة</button></td>
+            </tr>
+        `).join('');
     },
 
     // ── Dashboard ──
     renderDashboard() {
-        document.getElementById('totalItems').textContent = this.items.length;
-        document.getElementById('totalBurgers').textContent = this.items.filter(i => i.category === 'برجر').length;
-        document.getElementById('totalGrill').textContent = this.items.filter(i => i.category === 'مشويات').length;
-        document.getElementById('totalOrders').textContent = this.orders.length;
+        const totalSales = this.orders.reduce((sum, o) => sum + o.total, 0);
+        const totalOrders = this.orders.length;
+        const totalItems = this.items.length;
 
-        // Revenue & Avg
-        const totalRev = this.orders.reduce((s, o) => s + o.total, 0);
-        const avgOrd = this.orders.length > 0 ? totalRev / this.orders.length : 0;
-        document.getElementById('totalRevenue').textContent = totalRev.toFixed(2) + ' ر.س';
-        document.getElementById('avgOrder').textContent = avgOrd.toFixed(2) + ' ر.س';
+        const salesElem = document.getElementById('dashTotalSales');
+        const ordersElem = document.getElementById('dashTotalOrders');
+        const itemsElem = document.getElementById('dashTotalItems');
 
-        // Recent Orders
-        const recentOrders = document.getElementById('recentOrders');
-        if (this.orders.length === 0) {
-            recentOrders.innerHTML = '<p class="empty-msg">لا توجد طلبات بعد</p>';
-        } else {
-            recentOrders.innerHTML = this.orders.slice(0, 5).map(order => {
-                const date = new Date(order.date);
-                return `
-                    <div class="order-item">
-                        <div>
-                            <strong>${order.id}</strong>
-                            <p style="font-size:0.75rem;color:var(--text-light);">${date.toLocaleTimeString('ar-SA')}</p>
-                        </div>
-                        <strong style="color:var(--primary);">${order.total.toFixed(2)} ر.س</strong>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        // Top Items
-        const topItems = document.getElementById('topItems');
-        const itemCounts = {};
-        this.orders.forEach(order => {
-            order.items.forEach(item => {
-                if (!itemCounts[item.name]) itemCounts[item.name] = 0;
-                itemCounts[item.name] += item.qty;
-            });
-        });
-        const sorted = Object.entries(itemCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
-
-        if (sorted.length === 0) {
-            topItems.innerHTML = '<p class="empty-msg">لا توجد بيانات بعد</p>';
-        } else {
-            const maxCount = sorted[0][1];
-            topItems.innerHTML = sorted.map(([name, count], idx) => {
-                const pct = (count / maxCount) * 100;
-                return `
-                    <div class="order-item" style="flex-direction:column;align-items:stretch;gap:6px;">
-                        <div style="display:flex;justify-content:space-between;">
-                            <strong style="font-size:0.85rem;">${idx + 1}. ${name}</strong>
-                            <span style="background:var(--primary);color:white;padding:2px 10px;border-radius:12px;font-size:0.75rem;font-weight:600;">${count} مرة</span>
-                        </div>
-                        <div style="width:100%;height:5px;background:var(--border);border-radius:3px;overflow:hidden;">
-                            <div style="width:${pct}%;height:100%;background:linear-gradient(90deg,var(--primary),var(--primary-light));border-radius:3px;"></div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        // Categories
-        const catStats = document.getElementById('categoryStats');
-        const catColors = {
-            'برجر': '#e65100',
-            'مشويات': '#d63031',
-            'مقبلات': '#f39c12',
-            'مشروبات': '#0984e3',
-            'أطباق جانبية': '#00b894',
-            'حلويات': '#e84393'
-        };
-        const catIcons = {
-            'برجر': 'fa-burger',
-            'مشويات': 'fa-fire',
-            'مقبلات': 'fa-cookie-bite',
-            'مشروبات': 'fa-glass-water',
-            'أطباق جانبية': 'fa-bowl-food',
-            'حلويات': 'fa-ice-cream'
-        };
-
-        const catCounts = {};
-        this.items.forEach(item => {
-            if (!catCounts[item.category]) catCounts[item.category] = 0;
-            catCounts[item.category]++;
-        });
-
-        const totalItems = this.items.length || 1;
-        const catEntries = Object.entries(catCounts).sort((a, b) => b[1] - a[1]);
-
-        if (catEntries.length === 0) {
-            catStats.innerHTML = '<p class="empty-msg">لا توجد أصناف</p>';
-        } else {
-            catStats.innerHTML = catEntries.map(([cat, count]) => {
-                const pct = (count / totalItems) * 100;
-                const color = catColors[cat] || '#636e72';
-                const icon = catIcons[cat] || 'fa-utensils';
-                return `
-                    <div class="cat-stat-row">
-                        <div class="cat-stat-icon" style="background:${color};"><i class="fas ${icon}"></i></div>
-                        <div class="cat-stat-info">
-                            <div class="cat-stat-name">${cat}</div>
-                            <div class="cat-stat-bar">
-                                <div class="cat-stat-bar-fill" style="width:${pct}%;background:${color};"></div>
-                            </div>
-                        </div>
-                        <span class="cat-stat-count">${count}</span>
-                    </div>
-                `;
-            }).join('');
-        }
+        if (salesElem) salesElem.textContent = totalSales.toFixed(2) + ' ر.س';
+        if (ordersElem) ordersElem.textContent = totalOrders;
+        if (itemsElem) itemsElem.textContent = totalItems;
     },
 
     // ── Search ──
     setupSearch() {
-        document.getElementById('globalSearch').addEventListener('input', (e) => {
-            const query = e.target.value.trim().toLowerCase();
-            if (!query) return;
-
-            const found = this.items.find(i =>
-                i.name.toLowerCase().includes(query) ||
-                i.barcode.includes(query)
-            );
-
-            if (found) {
-                document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-                document.querySelector('[data-page="items"]').classList.add('active');
-                document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-                document.getElementById('page-items').classList.add('active');
-                document.getElementById('categoryFilter').value = 'all';
-                this.renderItemsGrid();
-            }
-        });
+        const globalSearch = document.getElementById('globalSearch');
+        if (globalSearch) {
+            globalSearch.addEventListener('input', (e) => {
+                const query = e.target.value.trim();
+                if (query) {
+                    this.renderPOSItems(query);
+                }
+            });
+        }
     },
 
-    // ── Toast ──
+    // ── Toast Notifications ──
     showToast(message, type = 'success') {
-        const toast = document.createElement('div');
-        toast.style.cssText = `
-            position: fixed;
-            bottom: 24px;
-            left: 24px;
-            background: ${type === 'warning' ? '#fdcb6e' : type === 'error' ? '#d63031' : '#00b894'};
-            color: ${type === 'warning' ? '#2d3436' : 'white'};
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-family: 'Cairo', sans-serif;
-            font-size: 0.9rem;
-            font-weight: 600;
-            z-index: 9999;
-            animation: toastIn 0.3s ease;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-        `;
+        let toast = document.getElementById('toast');
+        if (!toast) {
+            toast = document.createElement('div');
+            toast.id = 'toast';
+            document.body.appendChild(toast);
+        }
+
+        toast.style.position = 'fixed';
+        toast.style.bottom = '24px';
+        toast.style.left = '24px';
+        toast.style.background = type === 'warning' ? '#fdcb6e' : type === 'error' ? '#d63031' : '#00b894';
+        toast.style.color = type === 'warning' ? '#2d3436' : 'white';
+        toast.style.padding = '12px 24px';
+        toast.style.borderRadius = '8px';
+        toast.style.fontFamily = "'Cairo', sans-serif";
+        toast.style.fontSize = '0.9rem';
+        toast.style.fontWeight = '600';
+        toast.style.zIndex = '9999';
+        toast.style.boxShadow = '0 4px 12px rgba(0,0,0,0.2)';
+
         toast.textContent = message;
-        document.body.appendChild(toast);
+        toast.style.opacity = '1';
+        toast.style.transition = 'opacity 0.3s';
 
         setTimeout(() => {
             toast.style.opacity = '0';
-            toast.style.transition = 'opacity 0.3s';
             setTimeout(() => toast.remove(), 300);
         }, 2500);
     }
 };
-// توليد باركود المنيو داخل الفاتورة
-const menuUrl = "https://almalamh.github.io/abou-maheeb-menu/";
-const qrContainer = document.getElementById("receiptQR");
 
-if (qrContainer) {
-  qrContainer.innerHTML = "";
-  if (typeof QRCode !== "undefined") {
-    new QRCode(qrContainer, {
-      text: menuUrl,
-      width: 160,
-      height: 160
-    });
-  } else if (typeof generateQRCanvas === "function") {
-    generateQRCanvas(qrContainer, menuUrl, 160);
-  }
-}
 document.addEventListener('DOMContentLoaded', () => App.init());
