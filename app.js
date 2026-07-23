@@ -90,6 +90,7 @@ var App = {
         this.setDate();
         this.renderSidebarQR();
         this.renderDashboard();
+        this.listenForFirebaseOrders();
     },
 
     setupLogout: function() {
@@ -1146,6 +1147,42 @@ var App = {
                 catStats.innerHTML = chtml;
             }
         }
+    },
+
+    listenForFirebaseOrders: function() {
+        var self = this;
+        if (typeof db === 'undefined') return;
+        db.collection('orders').where('status', '==', 'new').onSnapshot(function(snapshot) {
+            snapshot.docChanges().forEach(function(change) {
+                if (change.type === 'added') {
+                    var data = change.doc.data();
+                    var exists = false;
+                    for (var i = 0; i < self.orders.length; i++) {
+                        if (self.orders[i].id === data.id) { exists = true; break; }
+                    }
+                    if (!exists) {
+                        self.orders.unshift({
+                            id: data.id,
+                            items: data.items,
+                            subtotal: data.subtotal,
+                            tax: data.tax,
+                            total: data.total,
+                            channel: data.channel || '\u0645\u062d\u0644',
+                            paymentMethod: data.paymentMethod || '\u0643\u0627\u0634',
+                            date: data.date,
+                            source: data.source || 'menu'
+                        });
+                        self.saveOrders();
+                        self.renderOrdersTable();
+                        self.renderDashboard();
+                        self.showToast('\u0637\u0644\u0628 \u062c\u062f\u064a\u062f \u0645\u0646 \u0627\u0644\u0645\u0646\u064a\u0648: ' + data.id, 'warning');
+                        db.collection('orders').doc(data.id).update({ status: 'received' }).catch(function() {});
+                    }
+                }
+            });
+        }, function(err) {
+            console.log('Firebase listener error:', err);
+        });
     },
 
     setupSearch: function() {
