@@ -727,7 +727,11 @@ const App = {
                 <span>${order.total.toFixed(2)} ر.س</span>
             </div>
             <hr style="border:1px dashed #ccc;margin:12px 0;">
-            <p>شكراً لزيارتكم!</p>
+           <div style="text-align: center; margin-top: 15px;">
+  <p style="margin-bottom: 8px; font-weight: bold;">شكراً لزيارتكم!</p>
+  <img src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=https://almalamh.github.io/abou-maheeb-menu/" alt="QR" style="width: 150px; height: 150px; margin: 8px auto; display: block;" />
+  <p style="font-size: 13px; color: #555; margin-top: 5px;">امسح الكود لعرض القائمة</p>
+</div>
         `;
 
         modal.classList.add('active');
