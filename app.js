@@ -1006,7 +1006,7 @@ var App = {
             html += '<td><span class="status-badge ' + payClass + '">' + (order.paymentMethod || '\u0643\u0627\u0634') + '</span></td>';
             html += '<td><strong style="color:var(--primary);">' + order.total.toFixed(2) + ' \u0631.\u0633</strong></td>';
             html += '<td><span class="status-badge completed">\u0645\u0643\u062a\u0645\u0644</span></td>';
-            html += '<td><button class="item-btn delete" onclick="App.deleteOrder(\'' + order.id + '\')"><i class="fas fa-trash"></i></button></td>';
+            html += '<td class="order-btns"><button class="item-btn receipt" onclick="App.showReceipt(App.orders[' + i + '])" title="\u0639\u0631\u0636 \u0627\u0644\u0641\u0627\u062a\u0648\u0631\u0629"><i class="fas fa-file-invoice"></i></button> <button class="item-btn delete" onclick="App.deleteOrder(\'' + order.id + '\')"><i class="fas fa-trash"></i></button></td>';
             html += '</tr>';
         }
         tbody.innerHTML = html;
