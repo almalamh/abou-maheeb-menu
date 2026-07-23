@@ -1,4 +1,3 @@
-
 var firebaseConfig = {
     apiKey: "AIzaSyCOXdd8rSvTyILCvYqk5pS_WoaHJs2IxC0",
     authDomain: "abou-maheeb.firebaseapp.com",
