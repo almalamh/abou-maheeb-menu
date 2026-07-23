@@ -188,34 +188,72 @@
     var messagingInstance = null;
     var currentOrderUnsubscribe = null;
     var origTitle = document.title;
+    var audioCtx = null;
+
+    function getAudioContext() {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioCtx.state === 'suspended') {
+            audioCtx.resume();
+        }
+        return audioCtx;
+    }
 
     function playNotifSound() {
         try {
-            var ctx = new (window.AudioContext || window.webkitAudioContext)();
-            var notes = [523.25, 659.25, 783.99];
-            for (var i = 0; i < notes.length; i++) {
+            var ctx = getAudioContext();
+            var freqs = [523.25, 659.25, 783.99, 1046.50];
+            for (var i = 0; i < freqs.length; i++) {
                 var osc = ctx.createOscillator();
                 var gain = ctx.createGain();
                 osc.connect(gain);
                 gain.connect(ctx.destination);
-                osc.frequency.value = notes[i];
+                osc.frequency.value = freqs[i];
                 osc.type = 'sine';
-                var t = ctx.currentTime + i * 0.15;
-                gain.gain.setValueAtTime(0.3, t);
-                gain.gain.exponentialRampToValueAtTime(0.001, t + 0.4);
+                var t = ctx.currentTime + i * 0.12;
+                gain.gain.setValueAtTime(0.4, t);
+                gain.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
                 osc.start(t);
-                osc.stop(t + 0.4);
+                osc.stop(t + 0.35);
             }
         } catch(e) {}
     }
 
     function vibratePhone() {
-        if (navigator.vibrate) { navigator.vibrate([200, 100, 200, 100, 200]); }
+        try {
+            if (navigator.vibrate) {
+                navigator.vibrate([300, 100, 300, 100, 300, 100, 300]);
+            }
+        } catch(e) {}
     }
 
-    function notifyAlert() {
+    function flashPageTitle(msg) {
+        document.title = msg;
+        var count = 0;
+        var flashInterval = setInterval(function() {
+            document.title = (count % 2 === 0) ? msg : origTitle;
+            count++;
+            if (count >= 10) {
+                clearInterval(flashInterval);
+                document.title = origTitle;
+            }
+        }, 800);
+    }
+
+    function notifyAlert(msg) {
         playNotifSound();
         vibratePhone();
+        if (msg) flashPageTitle(msg);
+        try { window.focus(); } catch(e) {}
+    }
+
+    function sendBrowserNotification(title, body) {
+        try {
+            if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+                new Notification(title, { body: body, icon: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=100', requireInteraction: true });
+            }
+        } catch(e) {}
     }
 
     function saveActiveOrder(orderId) { localStorage.setItem('abou_maheeb_active_order', orderId); }
@@ -234,9 +272,9 @@
         if (typeof Notification !== 'undefined') {
             Notification.requestPermission().then(function(p) {
                 document.getElementById('notifPermOverlay').classList.remove('active');
-                if (p === 'granted') { 
+                if (p === 'granted') {
+                    getAudioContext();
                     showToast('تم تفعيل الإشعارات!');
-                    initFCM();
                 } else if (p === 'denied') {
                     showToast('تم رفض الإشعارات');
                 }
@@ -258,12 +296,12 @@
         } catch(e) {}
     }
 
-    if (typeof Notification !== 'undefined' && Notification.permission === 'granted') { initFCM(); }
-
     document.getElementById('notifPermBtn').addEventListener('click', requestNotifPermission);
     document.getElementById('notifPermSkip').addEventListener('click', function() {
         document.getElementById('notifPermOverlay').classList.remove('active');
     });
+
+    document.addEventListener('click', function() { getAudioContext(); }, { once: true });
     </script>
     <script>
     var menuItems = [
@@ -503,15 +541,20 @@
         icon.style.color = '';
         overlay.classList.add('active');
         document.getElementById('activeOrderBanner').style.display = 'none';
+        try { saveActiveOrder(orderId); } catch(e) {}
 
         if (currentOrderUnsubscribe) { currentOrderUnsubscribe(); }
+        var lastKnownStatus = 'new';
 
-        currentOrderUnsubscribe = db.collection('orders').doc(orderId).onSnapshot(function(doc) {
-            if (!doc.exists) return;
-            var st = doc.data().status;
+        function handleStatus(st) {
+            if (st === lastKnownStatus) return;
+            lastKnownStatus = st;
+
             if (st === 'received') {
+                step1.className = 'status-step done';
                 step2.className = 'status-step done';
                 step3.className = 'status-step active';
+                step4.className = 'status-step';
                 icon.className = 'status-icon received';
                 icon.style.background = '';
                 icon.style.color = '';
@@ -519,13 +562,10 @@
                 title.textContent = 'تم استلام طلبك!';
                 sub.innerHTML = 'رقم الطلب: ' + orderId + ' — جاري تحضير طلبك';
                 overlay.classList.add('active');
-                notifyAlert();
-                if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
-                    new Notification('أبو مهيب - برجر ومشويات', { body: 'تم استلام طلبك رقم ' + orderId, icon: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=100' });
-                }
-                document.title = '✓ تم استلام طلبك!';
-                setTimeout(function() { document.title = origTitle; }, 5000);
+                notifyAlert('✓ تم استلام طلبك!');
+                sendBrowserNotification('أبو مهيب - برجر ومشويات', 'تم استلام طلبك رقم ' + orderId);
             } else if (st === 'preparing') {
+                step2.className = 'status-step done';
                 step3.className = 'status-step done';
                 step4.className = 'status-step active';
                 icon.className = 'status-icon preparing';
@@ -535,13 +575,10 @@
                 title.textContent = 'جاري تحضير طلبك!';
                 sub.innerHTML = 'رقم الطلب: ' + orderId + ' — طلبك جاهز قريباً';
                 overlay.classList.add('active');
-                notifyAlert();
-                if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
-                    new Notification('أبو مهيب - برجر ومشويات', { body: 'جاري تحضير طلبك رقم ' + orderId, icon: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=100' });
-                }
-                document.title = '🔥 جاري تحضير طلبك!';
-                setTimeout(function() { document.title = origTitle; }, 5000);
+                notifyAlert('🔥 جاري تحضير طلبك!');
+                sendBrowserNotification('أبو مهيب - برجر ومشويات', 'جاري تحضير طلبك رقم ' + orderId);
             } else if (st === 'done') {
+                step3.className = 'status-step done';
                 step4.className = 'status-step done';
                 icon.className = 'status-icon done';
                 icon.style.background = '';
@@ -550,13 +587,9 @@
                 title.textContent = 'طلبك جاهز!';
                 sub.innerHTML = 'رقم الطلب: ' + orderId + ' — يمكنك استلام طلبك';
                 overlay.classList.add('active');
-                notifyAlert();
+                notifyAlert('✅ طلبك جاهز!');
+                sendBrowserNotification('أبو مهيب - برجر ومشويات', 'طلبك رقم ' + orderId + ' جاهز للاستلام!');
                 clearActiveOrder();
-                if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
-                    new Notification('أبو مهيب - برجر ومشويات', { body: 'طلبك رقم ' + orderId + ' جاهز للاستلام!', icon: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=100' });
-                }
-                document.title = '✅ طلبك جاهز!';
-                setTimeout(function() { document.title = origTitle; }, 8000);
             } else if (st === 'rejected') {
                 icon.className = 'status-icon';
                 icon.style.background = 'linear-gradient(135deg,#d63031,#ff7675)';
@@ -565,12 +598,30 @@
                 title.textContent = 'تم رفض الطلب';
                 sub.innerHTML = 'رقم الطلب: ' + orderId;
                 overlay.classList.add('active');
-                notifyAlert();
+                notifyAlert('❌ تم رفض الطلب');
+                sendBrowserNotification('أبو مهيب - برجر ومشويات', 'تم رفض طلبك رقم ' + orderId);
                 clearActiveOrder();
-                document.title = '❌ تم رفض الطلب';
-                setTimeout(function() { document.title = origTitle; }, 5000);
             }
+        }
+
+        currentOrderUnsubscribe = db.collection('orders').doc(orderId).onSnapshot(function(doc) {
+            if (!doc.exists) return;
+            handleStatus(doc.data().status);
+        }, function(err) {
+            console.log('Snapshot error:', err);
         });
+
+        var pollInterval = setInterval(function() {
+            if (lastKnownStatus === 'done' || lastKnownStatus === 'rejected') {
+                clearInterval(pollInterval);
+                return;
+            }
+            db.collection('orders').doc(orderId).get().then(function(doc) {
+                if (doc.exists) {
+                    handleStatus(doc.data().status);
+                }
+            }).catch(function() {});
+        }, 10000);
     }
 
     document.getElementById('cartConfirm').addEventListener('click', showModal);
