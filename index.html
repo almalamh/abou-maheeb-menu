@@ -5,8 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>أبو مهيب - نظام إدارة المطعم</title>
     <link rel="stylesheet" href="styles.css">
-    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
-    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body>
@@ -128,6 +126,7 @@
                     <line x1="80" y1="165" x2="160" y2="165" stroke="url(#sg)" stroke-width="2" stroke-linecap="round" opacity="0.25"/>
                     <line x1="85" y1="172" x2="155" y2="172" stroke="url(#sg)" stroke-width="2" stroke-linecap="round" opacity="0.15"/>
                 </svg>
+                <div class="sidebar-qr" id="sidebarQR"></div>
                 <h1>أبو مهيب</h1>
                 <p>نظام إدارة المطعم</p>
             </div>
@@ -188,6 +187,10 @@
                         <div class="dash-welcome-text">
                             <h2>مرحباً بك في أبو مهيب</h2>
                             <p>نظام إدارة البرجر والمشويات</p>
+                            <div class="dash-welcome-qr">
+                                <div id="dashQR"></div>
+                                <span>امسح لعرض القائمة</span>
+                            </div>
                         </div>
                         <div class="dash-welcome-icon">
                             <i class="fas fa-fire-burner"></i>
@@ -376,6 +379,30 @@
                                     <i class="fas fa-search"></i> بحث
                                 </button>
                             </div>
+                            <div class="scan-cart-section">
+                                <div class="scan-cart-header">
+                                    <h3><i class="fas fa-shopping-cart"></i> سلة الطلب</h3>
+                                    <span class="scan-cart-count" id="scanCartCount">0</span>
+                                </div>
+                                <div class="scan-cart-items" id="scanCartItems">
+                                    <p class="empty-msg">السلة فارغة</p>
+                                </div>
+                                <div class="scan-cart-total">
+                                    <span>الإجمالي</span>
+                                    <span id="scanCartTotal">0 ر.س</span>
+                                </div>
+                                <div class="scan-cart-actions">
+                                    <button class="btn btn-danger" onclick="App.clearScanCart()">
+                                        <i class="fas fa-trash"></i> مسح
+                                    </button>
+                                    <button class="btn btn-primary" onclick="App.goToPOS()">
+                                        <i class="fas fa-cash-register"></i> نقطة البيع
+                                    </button>
+                                    <button class="btn btn-success" onclick="App.completeScanOrder()">
+                                        <i class="fas fa-check"></i> إتمام الطلب
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -396,6 +423,7 @@
                                     <button class="pos-cat" data-cat="مقبلات">مقبلات</button>
                                     <button class="pos-cat" data-cat="مشروبات">مشروبات</button>
                                     <button class="pos-cat" data-cat="أطباق جانبية">جانبيات</button>
+                                    <button class="pos-cat" data-cat="حلويات">حلويات</button>
                                 </div>
                             </div>
                             <div class="pos-items-grid" id="posItemsGrid">
@@ -583,6 +611,8 @@
         </div>
     </div>
 
-    <script src="app.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js" defer></script>
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js" defer></script>
+    <script src="app.js" defer></script>
 </body>
 </html>
