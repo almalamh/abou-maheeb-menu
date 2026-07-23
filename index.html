@@ -183,15 +183,26 @@
                 <div class="page active" id="page-dashboard">
                     
                     <div class="dash-welcome">
-                        <div class="dash-welcome-text">
-                            <h2>مرحباً بكم في مطاعم أبو مهيب للمشاوي والبرجر</h2>
+                        <div class="dash-welcome-text" style="text-align:center;width:100%;display:flex;flex-direction:column;align-items:center;">
+                            <svg viewBox="0 0 500 160" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:480px;height:auto;">
+                                <defs>
+                                    <path id="welcomeArc" d="M 40 130 Q 250 10 460 130" fill="none"/>
+                                </defs>
+                                <text fill="url(#wg)" font-family="Cairo,Arial,sans-serif" font-size="28" font-weight="800" letter-spacing="2">
+                                    <textPath href="#welcomeArc" startOffset="50%" text-anchor="middle">مرحباً بكم في مطاعم أبو مهيب للمشاوي والبرجر</textPath>
+                                </text>
+                                <defs>
+                                    <linearGradient id="wg" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" stop-color="#ffd54f"/>
+                                        <stop offset="50%" stop-color="#ffb300"/>
+                                        <stop offset="100%" stop-color="#ff9e40"/>
+                                    </linearGradient>
+                                </defs>
+                            </svg>
                             <div class="dash-welcome-qr">
                                 <div id="dashQR"></div>
                                 <span>امسح لعرض القائمة</span>
                             </div>
-                        </div>
-                        <div class="dash-welcome-icon">
-                            <i class="fas fa-fire-burner"></i>
                         </div>
                     </div>
 
