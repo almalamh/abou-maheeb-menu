@@ -10,6 +10,7 @@ var App = {
     orders: [],
     cart: [],
     scanCart: [],
+    cartOrders: [],
     html5QrCode: null,
     scanning: false,
     paymentMethod: '\u0643\u0627\u0634',
@@ -90,6 +91,7 @@ var App = {
         this.setDate();
         this.renderSidebarQR();
         this.renderDashboard();
+        this.renderCart();
         this.listenForFirebaseOrders();
     },
 
@@ -1157,32 +1159,146 @@ var App = {
                 if (change.type === 'added') {
                     var data = change.doc.data();
                     var exists = false;
-                    for (var i = 0; i < self.orders.length; i++) {
-                        if (self.orders[i].id === data.id) { exists = true; break; }
+                    for (var i = 0; i < self.cartOrders.length; i++) {
+                        if (self.cartOrders[i].id === data.id) { exists = true; break; }
                     }
                     if (!exists) {
-                        self.orders.unshift({
-                            id: data.id,
-                            items: data.items,
-                            subtotal: data.subtotal,
-                            tax: data.tax,
-                            total: data.total,
-                            channel: data.channel || '\u0645\u062d\u0644',
+                        self.cartOrders.unshift({
+                            id: data.id, items: data.items, subtotal: data.subtotal,
+                            tax: data.tax, total: data.total, channel: data.channel || '\u0645\u062d\u0644',
                             paymentMethod: data.paymentMethod || '\u0643\u0627\u0634',
-                            date: data.date,
-                            source: data.source || 'menu'
+                            date: data.date, status: 'new', source: data.source || 'menu'
                         });
-                        self.saveOrders();
-                        self.renderOrdersTable();
-                        self.renderDashboard();
+                        self.renderCart();
                         self.showToast('\u0637\u0644\u0628 \u062c\u062f\u064a\u062f \u0645\u0646 \u0627\u0644\u0645\u0646\u064a\u0648: ' + data.id, 'warning');
-                        db.collection('orders').doc(data.id).update({ status: 'received' }).catch(function() {});
                     }
                 }
             });
         }, function(err) {
             console.log('Firebase listener error:', err);
         });
+    },
+
+    acceptOrder: function(id) {
+        var self = this;
+        if (typeof db === 'undefined') return;
+        db.collection('orders').doc(id).update({ status: 'received' }).then(function() {
+            for (var i = 0; i < self.cartOrders.length; i++) {
+                if (self.cartOrders[i].id === id) { self.cartOrders[i].status = 'received'; break; }
+            }
+            self.renderCart();
+            self.showToast('\u062a\u0645 \u0627\u0633\u062a\u0644\u0627\u0645 \u0627\u0644\u0637\u0644\u0628: ' + id);
+        });
+    },
+
+    prepareOrder: function(id) {
+        var self = this;
+        if (typeof db === 'undefined') return;
+        db.collection('orders').doc(id).update({ status: 'preparing' }).then(function() {
+            for (var i = 0; i < self.cartOrders.length; i++) {
+                if (self.cartOrders[i].id === id) { self.cartOrders[i].status = 'preparing'; break; }
+            }
+            self.renderCart();
+            self.showToast('\u062c\u0627\u0631\u064a \u062a\u062d\u0636\u064a\u0631 \u0627\u0644\u0637\u0644\u0628: ' + id);
+        });
+    },
+
+    completeOrder: function(id) {
+        var self = this;
+        if (typeof db === 'undefined') return;
+        var order = null;
+        for (var i = 0; i < self.cartOrders.length; i++) {
+            if (self.cartOrders[i].id === id) { order = self.cartOrders[i]; break; }
+        }
+        if (!order) return;
+        db.collection('orders').doc(id).update({ status: 'done' }).then(function() {
+            self.orders.unshift({
+                id: order.id, items: order.items, subtotal: order.subtotal,
+                tax: order.tax, total: order.total, channel: order.channel,
+                paymentMethod: order.paymentMethod, date: order.date, source: order.source
+            });
+            self.saveOrders();
+            self.renderOrdersTable();
+            self.renderDashboard();
+            var newCart = [];
+            for (var j = 0; j < self.cartOrders.length; j++) {
+                if (self.cartOrders[j].id !== id) { newCart.push(self.cartOrders[j]); }
+            }
+            self.cartOrders = newCart;
+            self.renderCart();
+            self.showToast('\u062a\u0645 \u062a\u0623\u0645\u064a\u0646 \u0627\u0644\u0637\u0644\u0628: ' + id);
+        });
+    },
+
+    rejectOrder: function(id) {
+        var self = this;
+        if (typeof db === 'undefined') return;
+        if (!confirm('\u0647\u0644 \u0623\u0646\u062a \u0645\u062a\u0623\u0643\u062f \u0645\u0646 \u0631\u0641\u0636 \u0647\u0630\u0627 \u0627\u0644\u0637\u0644\u0628\u061f')) return;
+        db.collection('orders').doc(id).update({ status: 'rejected' }).then(function() {
+            var newCart = [];
+            for (var j = 0; j < self.cartOrders.length; j++) {
+                if (self.cartOrders[j].id !== id) { newCart.push(self.cartOrders[j]); }
+            }
+            self.cartOrders = newCart;
+            self.renderCart();
+            self.showToast('\u062a\u0645 \u0631\u0641\u0636 \u0627\u0644\u0637\u0644\u0628: ' + id);
+        });
+    },
+
+    renderCart: function() {
+        var grid = document.getElementById('cartGrid');
+        var noMsg = document.getElementById('noCartMsg');
+        if (!grid) return;
+        if (this.cartOrders.length === 0) {
+            grid.innerHTML = '';
+            if (noMsg) noMsg.style.display = 'block';
+            return;
+        }
+        if (noMsg) noMsg.style.display = 'none';
+        var html = '';
+        for (var i = 0; i < this.cartOrders.length; i++) {
+            var o = this.cartOrders[i];
+            var date = new Date(o.date);
+            var dateStr = date.toLocaleDateString('ar-SA') + ' ' + date.toLocaleTimeString('ar-SA');
+            var statusClass = o.status === 'received' ? 'received' : o.status === 'preparing' ? 'preparing' : '';
+            var headerLabel = o.status === 'new' ? '\u0637\u0644\u0628 \u062c\u062f\u064a\u062f' : o.status === 'received' ? '\u062a\u0645 \u0627\u0644\u0627\u0633\u062a\u0644\u0627\u0645' : '\u062c\u0627\u0631\u064a \u0627\u0644\u062a\u062d\u0636\u064a\u0631';
+            html += '<div class="cart-card ' + statusClass + '">';
+            html += '<div class="cart-card-header"><h4><i class="fas fa-receipt"></i> ' + o.id + '</h4><span>' + dateStr + '</span></div>';
+            html += '<div class="cart-card-source"><i class="fas fa-mobile-alt"></i> طلب من الجوال</div>';
+            html += '<div class="cart-card-body">';
+            for (var j = 0; j < o.items.length; j++) {
+                var it = o.items[j];
+                html += '<div class="cart-item-row"><span>' + it.name + ' x' + it.qty + '</span><span>' + (it.price * it.qty).toFixed(2) + ' \u0631.\u0633</span></div>';
+            }
+            html += '</div>';
+            html += '<div class="cart-card-total"><span>\u0627\u0644\u0625\u062c\u0645\u0627\u0644\u064a</span><span>' + o.total.toFixed(2) + ' \u0631.\u0633</span></div>';
+            html += '<div class="cart-card-actions">';
+            if (o.status === 'new') {
+                html += '<button class="btn-accept" onclick="App.acceptOrder(\'' + o.id + '\')"><i class="fas fa-check"></i> استلام الطلب</button>';
+                html += '<button class="btn-reject" onclick="App.rejectOrder(\'' + o.id + '\')"><i class="fas fa-times"></i> رفض</button>';
+            } else if (o.status === 'received') {
+                html += '<button class="btn-preparing" onclick="App.prepareOrder(\'' + o.id + '\')"><i class="fas fa-fire"></i> جاري التحضير</button>';
+                html += '<button class="btn-reject" onclick="App.rejectOrder(\'' + o.id + '\')"><i class="fas fa-times"></i> رفض</button>';
+            } else if (o.status === 'preparing') {
+                html += '<button class="btn-done" onclick="App.completeOrder(\'' + o.id + '\')"><i class="fas fa-check-double"></i> تم التجهيز</button>';
+            }
+            html += '</div></div>';
+        }
+        grid.innerHTML = html;
+
+        var badge = document.getElementById('cartBadge');
+        if (badge) {
+            var count = 0;
+            for (var k = 0; k < this.cartOrders.length; k++) {
+                if (this.cartOrders[k].status === 'new') count++;
+            }
+            if (count > 0) {
+                badge.textContent = count;
+                badge.style.display = 'inline-block';
+            } else {
+                badge.style.display = 'none';
+            }
+        }
     },
 
     setupSearch: function() {
