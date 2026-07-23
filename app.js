@@ -8,6 +8,7 @@ const App = {
 
     // ── التهيئة ──
     init() {
+        this.setupAuth();
         this.setupNavigation();
         this.setupItemsManagement();
         this.setupPOS();
@@ -17,6 +18,44 @@ const App = {
         this.renderItemsTable();
         this.renderPOSCategories();
         this.renderPOSItems();
+    },
+
+    // ── نظام تسجيل الدخول ──
+    setupAuth() {
+        const loginForm = document.getElementById('loginForm') || document.querySelector('form');
+        if (loginForm) {
+            loginForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                this.handleLogin();
+            });
+        }
+    },
+
+    handleLogin() {
+        const usernameInput = document.getElementById('username') || document.querySelector('input[type="text"]');
+        const passwordInput = document.getElementById('password') || document.querySelector('input[type="password"]');
+
+        const username = usernameInput ? usernameInput.value.trim() : '';
+        const password = passwordInput ? passwordInput.value.trim() : '';
+
+        // تحقق من كتابة اسم المستخدم وكلمة المرور
+        if (!username || !password) {
+            this.showToast('يرجى إدخال اسم المستخدم وكلمة المرور', 'error');
+            return;
+        }
+
+        // إخفاء صفحة تسجيل الدخول وإظهار التطبيق الرئيسي / لوحة التحكم
+        const loginPage = document.getElementById('loginPage') || document.getElementById('page-login') || document.querySelector('.login-container');
+        const mainApp = document.getElementById('mainApp') || document.getElementById('app') || document.querySelector('.app-container');
+
+        if (loginPage) loginPage.style.display = 'none';
+        if (mainApp) mainApp.style.display = 'block';
+
+        // تفعيل صفحة لوحة التحكم
+        const dashLink = document.querySelector('[data-page="dashboard"]');
+        if (dashLink) dashLink.click();
+
+        this.showToast(`أهلاً بك، ${username}!`);
     },
 
     // ── التنقل بين الصفحات ──
@@ -33,7 +72,8 @@ const App = {
                 pages.forEach(p => p.classList.remove('active'));
 
                 link.classList.add('active');
-                document.getElementById(`page-${targetPage}`).classList.add('active');
+                const targetEl = document.getElementById(`page-${targetPage}`);
+                if (targetEl) targetEl.classList.add('active');
 
                 if (targetPage === 'dashboard') this.renderDashboard();
                 if (targetPage === 'orders') this.renderOrdersTable();
@@ -399,7 +439,8 @@ const App = {
             const query = e.target.value.trim().toLowerCase();
             if (!query) return;
 
-            if (document.getElementById('page-items').classList.contains('active')) {
+            const itemsPage = document.getElementById('page-items');
+            if (itemsPage && itemsPage.classList.contains('active')) {
                 const filtered = this.items.filter(i => i.name.toLowerCase().includes(query) || i.barcode.includes(query));
                 this.renderFilteredItems(filtered);
             }
