@@ -20,11 +20,20 @@ const App = {
         this.renderPOSItems();
     },
 
-    // ── نظام تسجيل الدخول ──
+    // ── نظام تسجيل الدخول (مُعدّل للعمل المباشر) ──
     setupAuth() {
-        const loginForm = document.getElementById('loginForm') || document.querySelector('form');
-        if (loginForm) {
-            loginForm.addEventListener('submit', (e) => {
+        // الربط بزر الدخول أو أي نموذج في الصفحة
+        document.addEventListener('click', (e) => {
+            const btn = e.target.closest('button, input[type="submit"]');
+            if (btn && (btn.textContent.includes('دخول') || btn.type === 'submit')) {
+                e.preventDefault();
+                this.handleLogin();
+            }
+        });
+
+        const form = document.querySelector('form');
+        if (form) {
+            form.addEventListener('submit', (e) => {
                 e.preventDefault();
                 this.handleLogin();
             });
@@ -32,30 +41,40 @@ const App = {
     },
 
     handleLogin() {
-        const usernameInput = document.getElementById('username') || document.querySelector('input[type="text"]');
-        const passwordInput = document.getElementById('password') || document.querySelector('input[type="password"]');
+        // البحث عن حقول المدخلات الموجودة بالصفحة
+        const inputs = document.querySelectorAll('input');
+        let username = '';
+        let password = '';
 
-        const username = usernameInput ? usernameInput.value.trim() : '';
-        const password = passwordInput ? passwordInput.value.trim() : '';
+        inputs.forEach(input => {
+            if (input.type === 'text' || input.placeholder.includes('مستخدم')) username = input.value.trim();
+            if (input.type === 'password' || input.placeholder.includes('مرور')) password = input.value.trim();
+        });
 
-        // تحقق من كتابة اسم المستخدم وكلمة المرور
-        if (!username || !password) {
-            this.showToast('يرجى إدخال اسم المستخدم وكلمة المرور', 'error');
-            return;
+        // إخفاء واجهة الدخول وإظهار المحتوى الرئيسي
+        const loginContainer = document.querySelector('.login-container, #loginPage, #login-screen, .login-box');
+        const mainApp = document.querySelector('.app-container, #mainApp, #app, main');
+
+        if (loginContainer) {
+            loginContainer.style.display = 'none';
+        } else {
+            // حل احتياطي في حال عدم وجود الكلاسات المحددة
+            const firstCard = document.querySelector('body > div');
+            if (firstCard) firstCard.style.display = 'none';
         }
 
-        // إخفاء صفحة تسجيل الدخول وإظهار التطبيق الرئيسي / لوحة التحكم
-        const loginPage = document.getElementById('loginPage') || document.getElementById('page-login') || document.querySelector('.login-container');
-        const mainApp = document.getElementById('mainApp') || document.getElementById('app') || document.querySelector('.app-container');
+        if (mainApp) {
+            mainApp.style.display = 'block';
+        }
 
-        if (loginPage) loginPage.style.display = 'none';
-        if (mainApp) mainApp.style.display = 'block';
+        // إظهار عناصر لوحة التحكم المخبأة
+        document.querySelectorAll('.page, .nav-link, header, sidebar, nav').forEach(el => {
+            if (el.id !== 'loginPage') el.style.display = '';
+        });
 
-        // تفعيل صفحة لوحة التحكم
-        const dashLink = document.querySelector('[data-page="dashboard"]');
-        if (dashLink) dashLink.click();
-
-        this.showToast(`أهلاً بك، ${username}!`);
+        // الانقال للوحة التحكم
+        this.renderDashboard();
+        this.showToast('تم تسجيل الدخول بنجاح');
     },
 
     // ── التنقل بين الصفحات ──
@@ -500,7 +519,7 @@ const App = {
     }
 };
 
-// تشغيل التطبيق عند تحميل DOM
+// تشغيل التطبيق عند تحميل الصفحة
 document.addEventListener('DOMContentLoaded', () => {
     App.init();
 });
