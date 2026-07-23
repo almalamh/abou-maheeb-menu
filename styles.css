@@ -1899,3 +1899,154 @@ form {
     border-radius: 8px;
     margin-bottom: 8px;
 }
+
+.cart-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 16px;
+}
+
+.cart-card {
+    background: white;
+    border-radius: 12px;
+    border: 2px solid #e17055;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    animation: slideIn 0.3s ease;
+}
+
+.cart-card.received {
+    border-color: #00b894;
+}
+
+.cart-card.preparing {
+    border-color: #fdcb6e;
+}
+
+@keyframes slideIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.cart-card-header {
+    background: linear-gradient(135deg, #e65100, #ff9e40);
+    color: white;
+    padding: 12px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.cart-card.received .cart-card-header {
+    background: linear-gradient(135deg, #00b894, #55efc4);
+}
+
+.cart-card.preparing .cart-card-header {
+    background: linear-gradient(135deg, #fdcb6e, #ffeaa7);
+    color: #2d3436;
+}
+
+.cart-card-header h4 {
+    font-size: 0.95rem;
+    font-weight: 800;
+}
+
+.cart-card-header span {
+    font-size: 0.75rem;
+    opacity: 0.8;
+}
+
+.cart-card-body {
+    padding: 12px 16px;
+}
+
+.cart-card-body .cart-item-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    border-bottom: 1px dotted #eee;
+    font-size: 0.85rem;
+}
+
+.cart-card-body .cart-item-row:last-child {
+    border-bottom: none;
+}
+
+.cart-card-total {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 16px;
+    background: #f8f9fa;
+    font-weight: 800;
+    font-size: 1rem;
+    color: var(--primary);
+}
+
+.cart-card-actions {
+    padding: 12px 16px;
+    display: flex;
+    gap: 8px;
+}
+
+.cart-card-actions button {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 8px;
+    font-family: Cairo, sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-accept {
+    background: linear-gradient(135deg, #00b894, #00cec9);
+    color: white;
+}
+
+.btn-accept:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,184,148,0.4);
+}
+
+.btn-preparing {
+    background: linear-gradient(135deg, #fdcb6e, #ffeaa7);
+    color: #2d3436;
+}
+
+.btn-preparing:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(253,203,110,0.4);
+}
+
+.btn-done {
+    background: linear-gradient(135deg, #e65100, #ff9e40);
+    color: white;
+}
+
+.btn-done:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(230,81,0,0.4);
+}
+
+.btn-reject {
+    background: #dfe6e9;
+    color: #d63031;
+}
+
+.btn-reject:hover {
+    background: #ff7675;
+    color: white;
+}
+
+.cart-card-source {
+    font-size: 0.7rem;
+    color: rgba(255,255,255,0.7);
+    padding: 0 16px 8px;
+}
+
+.cart-card.received .cart-card-source,
+.cart-card.preparing .cart-card-source {
+    color: #888;
+}
