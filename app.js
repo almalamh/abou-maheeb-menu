@@ -93,6 +93,9 @@ var App = {
         this.renderDashboard();
         this.renderCart();
         this.listenForFirebaseOrders();
+        if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
+            Notification.requestPermission();
+        }
     },
 
     setupLogout: function() {
@@ -116,6 +119,7 @@ var App = {
             this.saveItems();
         }
         if (!this.orders) { this.orders = []; }
+        this.resyncAllItems();
     },
 
     createDefaultItems: function() {
@@ -159,8 +163,9 @@ var App = {
             var itemsForFirestore = [];
             for (var i = 0; i < this.items.length; i++) {
                 var it = this.items[i];
+                var cat = (it.category || '').trim();
                 itemsForFirestore.push({
-                    id: it.id, name: it.name, category: it.category,
+                    id: it.id, name: it.name, category: cat,
                     barcode: it.barcode, price: it.price, cost: it.cost || 0,
                     description: it.description || '', sizes: it.sizes || '',
                     image: it.image || ''
@@ -168,6 +173,13 @@ var App = {
             }
             db.collection('menu_items').doc('all').set({ items: itemsForFirestore, updatedAt: new Date().toISOString() }).catch(function() {});
         } catch(e) {}
+    },
+
+    resyncAllItems: function() {
+        for (var i = 0; i < this.items.length; i++) {
+            this.items[i].category = (this.items[i].category || '').trim();
+        }
+        this.syncItemsToFirestore();
     },
 
     saveOrders: function() {
@@ -1184,6 +1196,47 @@ var App = {
         }
     },
 
+    playOrderSound: function() {
+        try {
+            var ctx = new (window.AudioContext || window.webkitAudioContext)();
+            var freqs = [800, 1000, 800, 1000, 800, 1200];
+            for (var i = 0; i < freqs.length; i++) {
+                var osc = ctx.createOscillator();
+                var gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.frequency.value = freqs[i];
+                osc.type = 'sine';
+                var t = ctx.currentTime + i * 0.15;
+                gain.gain.setValueAtTime(0.5, t);
+                gain.gain.exponentialRampToValueAtTime(0.001, t + 0.2);
+                osc.start(t);
+                osc.stop(t + 0.2);
+            }
+        } catch(e) {}
+    },
+
+    vibrateDevice: function() {
+        try {
+            if (navigator.vibrate) {
+                navigator.vibrate([300, 100, 300, 100, 300]);
+            }
+        } catch(e) {}
+    },
+
+    flashTitle: function(msg) {
+        var orig = document.title;
+        var count = 0;
+        var interval = setInterval(function() {
+            document.title = (count % 2 === 0) ? msg : orig;
+            count++;
+            if (count >= 20) {
+                clearInterval(interval);
+                document.title = orig;
+            }
+        }, 600);
+    },
+
     listenForFirebaseOrders: function() {
         var self = this;
         if (typeof db === 'undefined') return;
@@ -1204,7 +1257,15 @@ var App = {
                             fcmToken: data.fcmToken || ''
                         });
                         self.renderCart();
+                        self.playOrderSound();
+                        self.vibrateDevice();
+                        self.flashTitle('\u0637\u0644\u0628 \u062c\u062f\u064a\u062f \u0645\u0646 \u0627\u0644\u0645\u0646\u064a\u0648!');
                         self.showToast('\u0637\u0644\u0628 \u062c\u062f\u064a\u062f \u0645\u0646 \u0627\u0644\u0645\u0646\u064a\u0648: ' + data.id, 'warning');
+                        try {
+                            if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+                                new Notification('\u0637\u0644\u0628 \u062c\u062f\u064a\u062f!', { body: '\u0637\u0644\u0628 \u062c\u062f\u064a\u062f \u0645\u0646 \u0627\u0644\u0645\u0646\u064a\u0648: ' + data.id, requireInteraction: true });
+                            }
+                        } catch(e) {}
                     }
                 }
             });
