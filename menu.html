@@ -152,6 +152,9 @@
             <h3><i class="fas fa-receipt"></i> تفاصيل الطلب</h3>
             <ul class="cart-items-list" id="orderItemsList"></ul>
             <div class="modal-total" id="orderTotal"></div>
+            <div style="padding:0 16px;">
+                <input type="text" id="customerName" placeholder="اسم العميل (اختياري)" style="width:100%;padding:12px 14px;border:2px solid #ffffff15;border-radius:10px;background:#0f0f23;color:#fff;font-family:Cairo,sans-serif;font-size:0.9rem;outline:none;margin-bottom:4px;" maxlength="30">
+            </div>
             <div class="modal-actions">
                 <button class="btn-cancel" id="modalCancel">إلغاء</button>
                 <button class="btn-send" id="modalSend"><i class="fas fa-paper-plane"></i> إرسال الطلب</button>
@@ -368,14 +371,31 @@
         { name:"كيكة الشوكولاتة", category:"حلويات", price:11.50, description:"كيكة شوكولاتة طرية", image:"https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=400" }
     ];
 
+    function normalizeCategory(cat) {
+        if (!cat) return 'أخرى';
+        var c = cat.trim();
+        var known = ['برجر','مشويات','مقبلات','مشروبات','أطباق جانبية','حلويات'];
+        for (var i = 0; i < known.length; i++) {
+            if (c === known[i]) return known[i];
+        }
+        return c || 'أخرى';
+    }
+
     function loadMenuItems() {
+        for (var i = 0; i < defaultMenuItems.length; i++) {
+            defaultMenuItems[i].category = normalizeCategory(defaultMenuItems[i].category);
+        }
         menuItems = defaultMenuItems.slice();
         renderCatFilter();
         renderMenu();
         if (typeof db === 'undefined') return;
         db.collection('menu_items').doc('all').get().then(function(doc) {
             if (doc.exists && doc.data().items && doc.data().items.length > 0) {
-                menuItems = doc.data().items;
+                var loaded = doc.data().items;
+                for (var i = 0; i < loaded.length; i++) {
+                    loaded[i].category = normalizeCategory(loaded[i].category);
+                }
+                menuItems = loaded;
                 renderCatFilter();
                 renderMenu();
             }
@@ -574,7 +594,8 @@
             status: 'new',
             date: new Date().toISOString(),
             source: 'menu',
-            fcmToken: fcmToken || ''
+            fcmToken: fcmToken || '',
+            customerName: document.getElementById('customerName').value.trim() || ''
         };
 
         document.getElementById('modalSend').disabled = true;
@@ -583,6 +604,7 @@
         db.collection('orders').doc(orderId).set(orderData)
             .then(function() {
                 document.getElementById('orderModal').classList.remove('active');
+                document.getElementById('customerName').value = '';
                 cart = {};
                 renderMenu();
                 updateCartBar();
