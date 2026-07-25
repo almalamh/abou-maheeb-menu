@@ -95,6 +95,19 @@
         .install-banner .ib-btn { padding:8px 16px; border:none; border-radius:8px; background:linear-gradient(135deg,#e65100,#ff9e40); color:#fff; font-family:Cairo,sans-serif; font-size:0.8rem; font-weight:700; cursor:pointer; }
         .install-banner .ib-close { background:none; border:none; color:#666; font-size:1.2rem; cursor:pointer; margin-left:8px; }
         @keyframes slideDown { from{transform:translateY(-100%)} to{transform:translateY(0)} }
+        .cat-filter { display:flex; gap:10px; padding:16px; overflow-x:auto; scrollbar-width:none; -webkit-overflow-scrolling:touch; }
+        .cat-filter::-webkit-scrollbar { display:none; }
+        .cat-filter-item { display:flex; flex-direction:column; align-items:center; gap:6px; min-width:72px; padding:10px 8px; border-radius:14px; background:#1a1a2e; border:2px solid #ffffff10; cursor:pointer; transition:all 0.25s; }
+        .cat-filter-item:active { transform:scale(0.95); }
+        .cat-filter-item.active { border-color:#ff9e40; background:linear-gradient(135deg,#e6510020,#ff9e4020); }
+        .cat-filter-item .cf-icon { width:40px; height:40px; border-radius:50%; background:linear-gradient(135deg,#333,#444); display:flex; align-items:center; justify-content:center; font-size:1rem; color:#aaa; transition:all 0.25s; }
+        .cat-filter-item.active .cf-icon { background:linear-gradient(135deg,#e65100,#ff9e40); color:#fff; }
+        .cat-filter-item .cf-label { font-size:0.7rem; font-weight:700; color:#888; text-align:center; white-space:nowrap; transition:color 0.25s; }
+        .cat-filter-item.active .cf-label { color:#ff9e40; }
+        .cat-filter-all { background:linear-gradient(135deg,#1a1a2e,#16213e); border:2px solid #ff9e4033; }
+        .cat-filter-all.active { border-color:#ff9e40; background:linear-gradient(135deg,#e6510030,#ff9e4030); }
+        .cat-filter-all .cf-icon { background:linear-gradient(135deg,#ff9e40,#ffd54f); color:#1a1a2e; }
+        .cat-filter-all.active .cf-icon { background:linear-gradient(135deg,#e65100,#ff9e40); color:#fff; }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
@@ -118,6 +131,7 @@
         <p class="phone"><i class="fas fa-phone-alt"></i> 0531008683</p>
         <p class="address"><i class="fas fa-map-marker-alt"></i> المدينة: الدمام - الحي الريان - الشارع عثمان بن عفان</p>
     </div>
+    <div class="cat-filter" id="catFilter"></div>
     <div id="menuContent"></div>
     <div class="footer">
         <p>أبو مهيب للبرجر والمشويات</p>
@@ -356,11 +370,13 @@
 
     function loadMenuItems() {
         menuItems = defaultMenuItems.slice();
+        renderCatFilter();
         renderMenu();
         if (typeof db === 'undefined') return;
         db.collection('menu_items').doc('all').get().then(function(doc) {
             if (doc.exists && doc.data().items && doc.data().items.length > 0) {
                 menuItems = doc.data().items;
+                renderCatFilter();
                 renderMenu();
             }
         }).catch(function() {});
@@ -373,6 +389,37 @@
 
     var cart = {};
     var orderNum = 1;
+    var selectedCategory = null;
+
+    function renderCatFilter() {
+        var cats = {};
+        menuItems.forEach(function(item) {
+            if (!cats[item.category]) cats[item.category] = 0;
+            cats[item.category]++;
+        });
+        var allCats = Object.keys(cats);
+        var html = '';
+        html += '<div class="cat-filter-item cat-filter-all' + (selectedCategory === null ? ' active' : '') + '" onclick="filterCategory(null)">';
+        html += '<div class="cf-icon"><i class="fas fa-border-all"></i></div>';
+        html += '<div class="cf-label">الكل</div>';
+        html += '</div>';
+        for (var c = 0; c < allCats.length; c++) {
+            var cat = allCats[c];
+            var icon = catIcons[cat] || 'fa-utensils';
+            var actClass = selectedCategory === cat ? ' active' : '';
+            html += '<div class="cat-filter-item' + actClass + '" onclick="filterCategory(\'' + cat.replace(/'/g,"\\'") + '\')">';
+            html += '<div class="cf-icon"><i class="fas ' + icon + '"></i></div>';
+            html += '<div class="cf-label">' + cat + '</div>';
+            html += '</div>';
+        }
+        document.getElementById('catFilter').innerHTML = html;
+    }
+
+    function filterCategory(cat) {
+        selectedCategory = cat;
+        renderCatFilter();
+        renderMenu();
+    }
 
     function genOrderId() {
         var d = new Date();
@@ -383,6 +430,7 @@
     function renderMenu() {
         var cats = {};
         menuItems.forEach(function(item) {
+            if (selectedCategory && item.category !== selectedCategory) return;
             if (!cats[item.category]) cats[item.category] = [];
             cats[item.category].push(item);
         });
