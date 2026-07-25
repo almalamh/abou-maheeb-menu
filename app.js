@@ -93,6 +93,7 @@ var App = {
         this.renderDashboard();
         this.renderCart();
         this.listenForFirebaseOrders();
+        this.setupDashCartDropdown();
         if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
             Notification.requestPermission();
         }
@@ -107,6 +108,22 @@ var App = {
                 location.reload();
             });
         }
+    },
+
+    setupDashCartDropdown: function() {
+        var self = this;
+        var btn = document.getElementById('dashCartBtn');
+        var dropdown = document.getElementById('dashCartDropdown');
+        if (!btn || !dropdown) return;
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            dropdown.classList.toggle('open');
+        });
+        document.addEventListener('click', function(e) {
+            if (!dropdown.contains(e.target) && e.target !== btn && !btn.contains(e.target)) {
+                dropdown.classList.remove('open');
+            }
+        });
     },
 
     loadData: function() {
@@ -1388,56 +1405,95 @@ var App = {
     renderCart: function() {
         var grid = document.getElementById('cartGrid');
         var noMsg = document.getElementById('noCartMsg');
-        if (!grid) return;
-        if (this.cartOrders.length === 0) {
-            grid.innerHTML = '';
-            if (noMsg) noMsg.style.display = 'block';
-            return;
-        }
-        if (noMsg) noMsg.style.display = 'none';
-        var html = '';
-        for (var i = 0; i < this.cartOrders.length; i++) {
-            var o = this.cartOrders[i];
-            var date = new Date(o.date);
-            var dateStr = date.toLocaleDateString('ar-SA') + ' ' + date.toLocaleTimeString('ar-SA');
-            var statusClass = o.status === 'received' ? 'received' : o.status === 'preparing' ? 'preparing' : '';
-            var headerLabel = o.status === 'new' ? '\u0637\u0644\u0628 \u062c\u062f\u064a\u062f' : o.status === 'received' ? '\u062a\u0645 \u0627\u0644\u0627\u0633\u062a\u0644\u0627\u0645' : '\u062c\u0627\u0631\u064a \u0627\u0644\u062a\u062d\u0636\u064a\u0631';
-            html += '<div class="cart-card ' + statusClass + '">';
-            html += '<div class="cart-card-header"><h4><i class="fas fa-receipt"></i> ' + o.id + '</h4><span>' + dateStr + '</span></div>';
-            html += '<div class="cart-card-source"><i class="fas fa-mobile-alt"></i> طلب من الجوال</div>';
-            html += '<div class="cart-card-body">';
-            for (var j = 0; j < o.items.length; j++) {
-                var it = o.items[j];
-                html += '<div class="cart-item-row"><span>' + it.name + ' x' + it.qty + '</span><span>' + (it.price * it.qty).toFixed(2) + ' \u0631.\u0633</span></div>';
-            }
-            html += '</div>';
-            html += '<div class="cart-card-total"><span>\u0627\u0644\u0625\u062c\u0645\u0627\u0644\u064a</span><span>' + o.total.toFixed(2) + ' \u0631.\u0633</span></div>';
-            html += '<div class="cart-card-actions">';
-            if (o.status === 'new') {
-                html += '<button class="btn-accept" onclick="App.acceptOrder(\'' + o.id + '\')"><i class="fas fa-check"></i> استلام الطلب</button>';
-                html += '<button class="btn-reject" onclick="App.rejectOrder(\'' + o.id + '\')"><i class="fas fa-times"></i> رفض</button>';
-            } else if (o.status === 'received') {
-                html += '<button class="btn-preparing" onclick="App.prepareOrder(\'' + o.id + '\')"><i class="fas fa-fire"></i> جاري التحضير</button>';
-                html += '<button class="btn-reject" onclick="App.rejectOrder(\'' + o.id + '\')"><i class="fas fa-times"></i> رفض</button>';
-            } else if (o.status === 'preparing') {
-                html += '<button class="btn-done" onclick="App.completeOrder(\'' + o.id + '\')"><i class="fas fa-check-double"></i> تم التجهيز</button>';
-            }
-            html += '</div></div>';
-        }
-        grid.innerHTML = html;
-
-        var badge = document.getElementById('cartBadge');
-        if (badge) {
-            var count = 0;
-            for (var k = 0; k < this.cartOrders.length; k++) {
-                if (this.cartOrders[k].status === 'new') count++;
-            }
-            if (count > 0) {
-                badge.textContent = count;
-                badge.style.display = 'inline-block';
+        var dropList = document.getElementById('dashCartDropList');
+        var dropCount = document.getElementById('dashCartDropCount');
+        var cartCountEl = document.getElementById('dashCartCount');
+        if (grid) {
+            if (this.cartOrders.length === 0) {
+                grid.innerHTML = '';
+                if (noMsg) noMsg.style.display = 'block';
             } else {
-                badge.style.display = 'none';
+                if (noMsg) noMsg.style.display = 'none';
+                var html = '';
+                for (var i = 0; i < this.cartOrders.length; i++) {
+                    var o = this.cartOrders[i];
+                    var date = new Date(o.date);
+                    var dateStr = date.toLocaleDateString('ar-SA') + ' ' + date.toLocaleTimeString('ar-SA');
+                    var statusClass = o.status === 'received' ? 'received' : o.status === 'preparing' ? 'preparing' : '';
+                    var headerLabel = o.status === 'new' ? '\u0637\u0644\u0628 \u062c\u062f\u064a\u062f' : o.status === 'received' ? '\u062a\u0645 \u0627\u0633\u062a\u0644\u0627\u0645' : '\u062c\u0627\u0631\u064a \u0627\u0644\u062a\u062d\u0636\u064a\u0631';
+                    html += '<div class="cart-card ' + statusClass + '">';
+                    html += '<div class="cart-card-header"><h4><i class="fas fa-receipt"></i> ' + o.id + '</h4><span>' + dateStr + '</span></div>';
+                    html += '<div class="cart-card-source"><i class="fas fa-mobile-alt"></i> طلب من الجوال</div>';
+                    html += '<div class="cart-card-body">';
+                    for (var j = 0; j < o.items.length; j++) {
+                        var it = o.items[j];
+                        html += '<div class="cart-item-row"><span>' + it.name + ' x' + it.qty + '</span><span>' + (it.price * it.qty).toFixed(2) + ' \u0631.\u0633</span></div>';
+                    }
+                    html += '</div>';
+                    html += '<div class="cart-card-total"><span>\u0627\u0644\u0625\u062c\u0645\u0627\u0644\u064a</span><span>' + o.total.toFixed(2) + ' \u0631.\u0633</span></div>';
+                    html += '<div class="cart-card-actions">';
+                    if (o.status === 'new') {
+                        html += '<button class="btn-accept" onclick="App.acceptOrder(\'' + o.id + '\')"><i class="fas fa-check"></i> استلام الطلب</button>';
+                        html += '<button class="btn-reject" onclick="App.rejectOrder(\'' + o.id + '\')"><i class="fas fa-times"></i> رفض</button>';
+                    } else if (o.status === 'received') {
+                        html += '<button class="btn-preparing" onclick="App.prepareOrder(\'' + o.id + '\')"><i class="fas fa-fire"></i> جاري التحضير</button>';
+                        html += '<button class="btn-reject" onclick="App.rejectOrder(\'' + o.id + '\')"><i class="fas fa-times"></i> رفض</button>';
+                    } else if (o.status === 'preparing') {
+                        html += '<button class="btn-done" onclick="App.completeOrder(\'' + o.id + '\')"><i class="fas fa-check-double"></i> تم التجهيز</button>';
+                    }
+                    html += '</div></div>';
+                }
+                grid.innerHTML = html;
             }
+        }
+        var newCount = 0;
+        for (var k = 0; k < this.cartOrders.length; k++) {
+            if (this.cartOrders[k].status === 'new') newCount++;
+        }
+        if (cartCountEl) {
+            if (newCount > 0) {
+                cartCountEl.textContent = newCount;
+                cartCountEl.style.display = 'flex';
+            } else {
+                cartCountEl.style.display = 'none';
+            }
+        }
+        if (dropList) {
+            if (this.cartOrders.length === 0) {
+                dropList.innerHTML = '<p class="empty-msg">\u0644\u0627 \u062a\u0648\u062c\u062f \u0637\u0644\u0628\u0627\u062a \u062c\u062f\u064a\u062f\u0629</p>';
+            } else {
+                var dhtml = '';
+                for (var d = 0; d < this.cartOrders.length; d++) {
+                    var ord = this.cartOrders[d];
+                    var odate = new Date(ord.date);
+                    var otime = odate.toLocaleTimeString('ar-SA');
+                    var oclass = ord.status;
+                    dhtml += '<div class="dash-drop-order ' + oclass + '">';
+                    dhtml += '<div class="dash-drop-header"><span class="order-id"><i class="fas fa-receipt"></i> ' + ord.id + '</span><span class="order-time">' + otime + '</span></div>';
+                    dhtml += '<div class="dash-drop-items">';
+                    for (var m = 0; m < ord.items.length; m++) {
+                        dhtml += '<div class="dash-drop-item"><span>' + ord.items[m].name + '</span><span class="di-qty">x' + ord.items[m].qty + ' — ' + (ord.items[m].price * ord.items[m].qty).toFixed(2) + ' \u0631.\u0633</span></div>';
+                    }
+                    dhtml += '</div>';
+                    dhtml += '<div class="dash-drop-footer"><span class="dash-drop-total">' + ord.total.toFixed(2) + ' \u0631.\u0633</span><div class="dash-drop-actions">';
+                    if (ord.status === 'new') {
+                        dhtml += '<button class="btn-accept" onclick="App.acceptOrder(\'' + ord.id + '\')"><i class="fas fa-check"></i> استلام</button>';
+                        dhtml += '<button class="btn-reject" onclick="App.rejectOrder(\'' + ord.id + '\')"><i class="fas fa-times"></i> رفض</button>';
+                    } else if (ord.status === 'received') {
+                        dhtml += '<button class="btn-preparing" onclick="App.prepareOrder(\'' + ord.id + '\')"><i class="fas fa-fire"></i> تحضير</button>';
+                        dhtml += '<button class="btn-reject" onclick="App.rejectOrder(\'' + ord.id + '\')"><i class="fas fa-times"></i> رفض</button>';
+                    } else if (ord.status === 'preparing') {
+                        dhtml += '<button class="btn-done" onclick="App.completeOrder(\'' + ord.id + '\')"><i class="fas fa-check-double"></i> جاهز</button>';
+                    }
+                    dhtml += '</div></div></div>';
+                }
+                dropList.innerHTML = dhtml;
+            }
+        }
+        if (dropCount) {
+            var totalCount = this.cartOrders.length;
+            var newCountStr = newCount > 0 ? ' (' + newCount + ' جديد)' : '';
+            dropCount.textContent = totalCount + ' طلب' + newCountStr;
         }
     },
 
