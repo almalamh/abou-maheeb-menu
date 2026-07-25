@@ -2050,3 +2050,238 @@ form {
 .cart-card.preparing .cart-card-source {
     color: #888;
 }
+
+.dash-cart-fixed {
+    position: relative;
+}
+
+.dash-cart-btn {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #e65100, #ff9e40);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    position: relative;
+    transition: transform 0.2s;
+}
+
+.dash-cart-btn:active {
+    transform: scale(0.95);
+}
+
+.dash-cart-btn i {
+    color: #fff;
+    font-size: 1.1rem;
+}
+
+.dash-cart-count {
+    position: absolute;
+    top: -6px;
+    left: -6px;
+    background: #d63031;
+    color: #fff;
+    font-size: 0.65rem;
+    font-weight: 800;
+    min-width: 20px;
+    height: 20px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid white;
+    animation: cartPulse 1.5s infinite;
+}
+
+@keyframes cartPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+}
+
+.dash-cart-dropdown {
+    display: none;
+    position: absolute;
+    top: 52px;
+    left: 0;
+    width: 360px;
+    max-height: 70vh;
+    background: white;
+    border-radius: 14px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+    z-index: 200;
+    overflow: hidden;
+    border: 1px solid rgba(0,0,0,0.08);
+}
+
+.dash-cart-dropdown.open {
+    display: block;
+    animation: dropSlide 0.25s ease;
+}
+
+@keyframes dropSlide {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.dash-cart-dropdown-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    background: linear-gradient(135deg, #e65100, #ff9e40);
+    color: #fff;
+}
+
+.dash-cart-dropdown-header h4 {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #fff;
+}
+
+.dash-cart-dropdown-count {
+    font-size: 0.75rem;
+    background: rgba(255,255,255,0.25);
+    padding: 3px 10px;
+    border-radius: 10px;
+    font-weight: 600;
+}
+
+.dash-cart-dropdown-list {
+    max-height: calc(70vh - 50px);
+    overflow-y: auto;
+    padding: 8px;
+}
+
+.dash-drop-order {
+    background: #f8f9fa;
+    border-radius: 10px;
+    margin-bottom: 8px;
+    overflow: hidden;
+    border: 1px solid rgba(0,0,0,0.06);
+}
+
+.dash-drop-order.new {
+    border-color: #e17055;
+    border-width: 2px;
+    animation: newOrderGlow 2s infinite;
+}
+
+@keyframes newOrderGlow {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(225, 112, 85, 0.3); }
+    50% { box-shadow: 0 0 8px 3px rgba(225, 112, 85, 0.2); }
+}
+
+.dash-drop-order.received {
+    border-color: #00b894;
+}
+
+.dash-drop-order.preparing {
+    border-color: #fdcb6e;
+}
+
+.dash-drop-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px;
+    background: #eee;
+    font-size: 0.8rem;
+}
+
+.dash-drop-order.new .dash-drop-header {
+    background: linear-gradient(135deg, #e65100, #ff9e40);
+    color: #fff;
+}
+
+.dash-drop-order.received .dash-drop-header {
+    background: #00b894;
+    color: #fff;
+}
+
+.dash-drop-order.preparing .dash-drop-header {
+    background: #fdcb6e;
+    color: #2d3436;
+}
+
+.dash-drop-header .order-id {
+    font-weight: 700;
+}
+
+.dash-drop-header .order-time {
+    font-size: 0.7rem;
+    opacity: 0.85;
+}
+
+.dash-drop-items {
+    padding: 8px 12px;
+}
+
+.dash-drop-item {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.78rem;
+    padding: 3px 0;
+    color: #555;
+}
+
+.dash-drop-item .di-qty {
+    color: var(--primary);
+    font-weight: 700;
+    margin-left: 8px;
+}
+
+.dash-drop-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    border-top: 1px solid #eee;
+}
+
+.dash-drop-total {
+    font-weight: 800;
+    color: var(--primary);
+    font-size: 0.9rem;
+}
+
+.dash-drop-actions {
+    display: flex;
+    gap: 6px;
+}
+
+.dash-drop-actions button {
+    padding: 5px 10px;
+    border: none;
+    border-radius: 6px;
+    font-family: 'Cairo', sans-serif;
+    font-size: 0.7rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.dash-drop-actions button:active {
+    opacity: 0.7;
+}
+
+.dash-drop-actions .btn-accept {
+    background: #00b894;
+    color: #fff;
+}
+
+.dash-drop-actions .btn-reject {
+    background: #d63031;
+    color: #fff;
+}
+
+.dash-drop-actions .btn-preparing {
+    background: #e65100;
+    color: #fff;
+}
+
+.dash-drop-actions .btn-done {
+    background: #00cec9;
+    color: #fff;
+}
