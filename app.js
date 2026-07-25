@@ -312,6 +312,20 @@ var App = {
         this.renderItemsGrid();
         this.renderBarcodeSelect();
         this.showToast(id ? '\u062a\u0645 \u062a\u062d\u062f\u064a\u062b \u0627\u0644\u0635\u0646\u0641' : '\u062a\u0645 \u0625\u0636\u0627\u0641\u0629 \u0627\u0644\u0635\u0646\u0641 \u0628\u0646\u062c\u0627\u062d');
+        if (!id) {
+            var self = this;
+            setTimeout(function() {
+                var allNav = document.querySelectorAll('.nav-item');
+                for (var n = 0; n < allNav.length; n++) { allNav[n].classList.remove('active'); }
+                var barcodeNav = document.querySelector('[data-page="barcode-gen"]');
+                if (barcodeNav) barcodeNav.classList.add('active');
+                var allPages = document.querySelectorAll('.page');
+                for (var p = 0; p < allPages.length; p++) { allPages[p].classList.remove('active'); }
+                var target = document.getElementById('page-barcode-gen');
+                if (target) target.classList.add('active');
+                self.renderBarcodeSelect();
+            }, 500);
+        }
     },
 
     setupItems: function() {
