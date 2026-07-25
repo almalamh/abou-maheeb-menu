@@ -49,8 +49,10 @@
         .cart-items-list li .ci-price { color:#aaa; font-size:0.85rem; }
         .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:1000; justify-content:center; align-items:flex-end; }
         .modal-overlay.active { display:flex; }
-        .modal-box { background:#1a1a2e; width:100%; max-width:500px; border-radius:16px 16px 0 0; padding:20px; max-height:80vh; overflow-y:auto; }
+        .modal-box { background:#1a1a2e; width:100%; max-width:500px; border-radius:16px 16px 0 0; padding:20px; max-height:80vh; display:flex; flex-direction:column; }
         .modal-box h3 { color:#ff9e40; text-align:center; margin-bottom:12px; font-size:1.1rem; }
+        .modal-box .modal-scroll { flex:1; overflow-y:auto; }
+        .modal-box .modal-bottom { flex-shrink:0; padding-top:12px; border-top:2px solid #ffffff15; margin-top:12px; }
         .modal-total { text-align:center; font-size:1.3rem; font-weight:800; color:#ff9e40; padding:12px 0; border-top:2px solid #ffffff15; margin-top:8px; }
         .modal-actions { display:flex; gap:10px; margin-top:12px; }
         .modal-actions button { flex:1; padding:12px; border:none; border-radius:10px; font-family:Cairo,sans-serif; font-size:0.95rem; font-weight:700; cursor:pointer; }
@@ -150,14 +152,19 @@
     <div class="modal-overlay" id="orderModal">
         <div class="modal-box">
             <h3><i class="fas fa-receipt"></i> تفاصيل الطلب</h3>
-            <ul class="cart-items-list" id="orderItemsList"></ul>
-            <div class="modal-total" id="orderTotal"></div>
-            <div style="padding:0 16px;">
-                <input type="text" id="customerName" placeholder="اسم العميل (اختياري)" style="width:100%;padding:12px 14px;border:2px solid #ffffff15;border-radius:10px;background:#0f0f23;color:#fff;font-family:Cairo,sans-serif;font-size:0.9rem;outline:none;margin-bottom:4px;" maxlength="30">
+            <div class="modal-scroll">
+                <ul class="cart-items-list" id="orderItemsList"></ul>
+                <div class="modal-total" id="orderTotal"></div>
             </div>
-            <div class="modal-actions">
-                <button class="btn-cancel" id="modalCancel">إلغاء</button>
-                <button class="btn-send" id="modalSend"><i class="fas fa-paper-plane"></i> إرسال الطلب</button>
+            <div class="modal-bottom">
+                <div style="margin-bottom:10px;">
+                    <label style="display:block;font-size:0.8rem;color:#aaa;margin-bottom:4px;"><i class="fas fa-user" style="margin-left:4px;"></i> اسم العميل</label>
+                    <input type="text" id="customerName" placeholder="أدخل اسمك هنا..." style="width:100%;padding:12px 14px;border:2px solid #ff9e4033;border-radius:10px;background:#0f0f23;color:#fff;font-family:Cairo,sans-serif;font-size:0.9rem;outline:none;" maxlength="30">
+                </div>
+                <div class="modal-actions">
+                    <button class="btn-cancel" id="modalCancel">إلغاء</button>
+                    <button class="btn-send" id="modalSend"><i class="fas fa-paper-plane"></i> إرسال الطلب</button>
+                </div>
             </div>
         </div>
     </div>
@@ -732,6 +739,7 @@
     document.getElementById('cartConfirm').addEventListener('click', showModal);
     document.getElementById('modalCancel').addEventListener('click', function() {
         document.getElementById('orderModal').classList.remove('active');
+        document.getElementById('customerName').value = '';
     });
     document.getElementById('modalSend').addEventListener('click', sendOrder);
 
