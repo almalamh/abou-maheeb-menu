@@ -4,6 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>قائمة أبو مهيب - برجر ومشويات</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#e65100">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="أبو مهيب">
+    <link rel="apple-touch-icon" href="icon-192.png">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
         * { margin:0; padding:0; box-sizing:border-box; }
@@ -83,6 +89,11 @@
         .notif-perm-skip { background:none; border:none; color:#666; font-family:Cairo,sans-serif; font-size:0.85rem; cursor:pointer; padding:8px 16px; }
         .active-order-banner { display:none; position:fixed; top:0; left:0; right:0; background:linear-gradient(135deg,#e65100,#ff9e40); color:#fff; padding:14px 16px; z-index:998; font-size:0.9rem; font-weight:700; cursor:pointer; animation:slideDown 0.3s ease; text-align:center; }
         .active-order-banner i { margin-left:8px; }
+        .install-banner { display:none; position:fixed; bottom:80px; left:0; right:0; background:linear-gradient(135deg,#1a1a2e,#16213e); border:2px solid #ff9e40; padding:14px 16px; z-index:997; animation:slideDown 0.3s ease; }
+        .install-banner .ib-inner { display:flex; align-items:center; justify-content:space-between; }
+        .install-banner .ib-text { color:#fff; font-size:0.85rem; font-weight:600; }
+        .install-banner .ib-btn { padding:8px 16px; border:none; border-radius:8px; background:linear-gradient(135deg,#e65100,#ff9e40); color:#fff; font-family:Cairo,sans-serif; font-size:0.8rem; font-weight:700; cursor:pointer; }
+        .install-banner .ib-close { background:none; border:none; color:#666; font-size:1.2rem; cursor:pointer; margin-left:8px; }
         @keyframes slideDown { from{transform:translateY(-100%)} to{transform:translateY(0)} }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -156,6 +167,16 @@
     </div>
 
     <div class="active-order-banner" id="activeOrderBanner" onclick="var oid=getActiveOrder();if(oid){showOrderStatus(oid);this.style.display='none';}"><i class="fas fa-bell"></i> لديك طلب نشط — اضغط لعرض الحالة</div>
+
+    <div class="install-banner" id="installBanner">
+        <div class="ib-inner">
+            <div class="ib-text"><i class="fas fa-download"></i> ثبّت تطبيق أبو مهيب على جوالك</div>
+            <div style="display:flex;align-items:center;">
+                <button class="ib-btn" id="installBtn">تثبيت</button>
+                <button class="ib-close" id="installClose">✕</button>
+            </div>
+        </div>
+    </div>
 
     <div class="notif-perm-overlay" id="notifPermOverlay">
         <div class="notif-perm-box">
@@ -639,6 +660,43 @@
     }
 
     setTimeout(function() { showNotifPermPopup(); }, 3000);
+
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js').then(function(reg) {
+            console.log('تم تسجيل Service Worker');
+        }).catch(function(err) {
+            console.log('خطأ في Service Worker:', err);
+        });
+    }
+
+    var deferredPrompt = null;
+    window.addEventListener('beforeinstallprompt', function(e) {
+        e.preventDefault();
+        deferredPrompt = e;
+        if (!localStorage.getItem('abou_maheeb_install_dismissed')) {
+            setTimeout(function() {
+                document.getElementById('installBanner').style.display = 'block';
+            }, 5000);
+        }
+    });
+
+    document.getElementById('installBtn').addEventListener('click', function() {
+        if (deferredPrompt) {
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice.then(function(choice) {
+                if (choice.outcome === 'accepted') {
+                    showToast('تم تثبيت التطبيق!');
+                    document.getElementById('installBanner').style.display = 'none';
+                }
+                deferredPrompt = null;
+            });
+        }
+    });
+
+    document.getElementById('installClose').addEventListener('click', function() {
+        document.getElementById('installBanner').style.display = 'none';
+        localStorage.setItem('abou_maheeb_install_dismissed', '1');
+    });
     </script>
 </body>
 </html>
