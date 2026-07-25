@@ -159,7 +159,7 @@
             <div class="modal-bottom">
                 <div style="margin-bottom:10px;">
                     <label style="display:block;font-size:0.8rem;color:#aaa;margin-bottom:4px;"><i class="fas fa-user" style="margin-left:4px;"></i> اسم العميل</label>
-                    <input type="text" id="customerName" placeholder="أدخل اسمك هنا..." style="width:100%;padding:12px 14px;border:2px solid #ff9e4033;border-radius:10px;background:#0f0f23;color:#fff;font-family:Cairo,sans-serif;font-size:0.9rem;outline:none;" maxlength="30">
+                    <input type="text" id="customerName" placeholder="اسمك هنا (مطلوب)" style="width:100%;padding:12px 14px;border:2px solid #ff9e4033;border-radius:10px;background:#0f0f23;color:#fff;font-family:Cairo,sans-serif;font-size:0.9rem;outline:none;" maxlength="30">
                 </div>
                 <div class="modal-actions">
                     <button class="btn-cancel" id="modalCancel">إلغاء</button>
@@ -573,6 +573,14 @@
     function sendOrder() {
         var keys = Object.keys(cart);
         if (keys.length === 0) return;
+        var custName = document.getElementById('customerName').value.trim();
+        if (!custName) {
+            document.getElementById('customerName').style.borderColor = '#d63031';
+            document.getElementById('customerName').style.boxShadow = '0 0 8px rgba(214,48,49,0.4)';
+            document.getElementById('customerName').setAttribute('placeholder', 'الرجاء إدخال اسمك!');
+            document.getElementById('customerName').focus();
+            return;
+        }
         var items = [];
         var total = 0;
         for (var i = 0; i < keys.length; i++) {
@@ -742,6 +750,10 @@
         document.getElementById('customerName').value = '';
     });
     document.getElementById('modalSend').addEventListener('click', sendOrder);
+    document.getElementById('customerName').addEventListener('input', function() {
+        this.style.borderColor = '#ff9e4033';
+        this.style.boxShadow = 'none';
+    });
 
     loadMenuItems();
 
