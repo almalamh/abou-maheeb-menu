@@ -979,7 +979,7 @@ var App = {
         var capturedQR = qrImgUrl;
         var capturedDate = dateStr;
         var capturedTime = timeStr;
-        var capturedOrder = { id: order.id, items: order.items, subtotal: order.subtotal, tax: order.tax, total: order.total, channel: oChannel, paymentMethod: oPay };
+        var capturedOrder = { id: order.id, items: order.items, subtotal: order.subtotal, tax: order.tax, total: order.total, channel: oChannel, paymentMethod: oPay, customerName: order.customerName || '' };
         var capturedLogo = logoSvg;
         var capturedAddr = '\u0627\u0644\u0645\u062f\u064a\u0646\u0629: ' + rAddr;
         var capturedPhone = rPhone;
@@ -1018,6 +1018,9 @@ var App = {
             h += '<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:0.85rem;"><span>\u0627\u0644\u0636\u0631\u064a\u0628\u0629 (15%)</span><span>' + capturedOrder.tax.toFixed(2) + ' \u0631.\u0633</span></div>';
             h += '<div style="display:flex;justify-content:space-between;padding:8px 0;font-size:1.15rem;font-weight:bold;border-top:2px solid #000;margin-top:8px;"><span>\u0627\u0644\u0625\u062c\u0645\u0627\u0644\u064a</span><span>' + capturedOrder.total.toFixed(2) + ' \u0631.\u0633</span></div>';
             h += '<hr style="border:1px dashed #ccc;margin:12px 0;">';
+            if (capturedOrder.customerName) {
+                h += '<p style="font-size:0.95rem;margin:6px 0;"><strong>\u0627\u0644\u0639\u0645\u064a\u0644: ' + capturedOrder.customerName + '</strong></p>';
+            }
             h += '<p style="font-size:0.9rem;">\u0634\u0643\u0631\u0627\u064b \u0644\u0632\u064a\u0627\u0631\u062a\u0643\u0645!</p>';
             h += '</div>';
             h += '<script>setTimeout(function(){window.print();window.close();},1000);<\/script>';
@@ -1271,7 +1274,8 @@ var App = {
                             tax: data.tax, total: data.total, channel: data.channel || '\u0645\u062d\u0644',
                             paymentMethod: data.paymentMethod || '\u0643\u0627\u0634',
                             date: data.date, status: 'new', source: data.source || 'menu',
-                            fcmToken: data.fcmToken || ''
+                            fcmToken: data.fcmToken || '',
+                            customerName: data.customerName || ''
                         });
                         self.renderCart();
                         self.playOrderSound();
@@ -1352,7 +1356,8 @@ var App = {
             self.orders.unshift({
                 id: order.id, items: order.items, subtotal: order.subtotal,
                 tax: order.tax, total: order.total, channel: order.channel,
-                paymentMethod: order.paymentMethod, date: order.date, source: order.source
+                paymentMethod: order.paymentMethod, date: order.date, source: order.source,
+                customerName: order.customerName || ''
             });
             self.saveOrders();
             self.renderOrdersTable();
@@ -1424,6 +1429,9 @@ var App = {
                     html += '<div class="cart-card ' + statusClass + '">';
                     html += '<div class="cart-card-header"><h4><i class="fas fa-receipt"></i> ' + o.id + '</h4><span>' + dateStr + '</span></div>';
                     html += '<div class="cart-card-source"><i class="fas fa-mobile-alt"></i> طلب من الجوال</div>';
+                    if (o.customerName) {
+                        html += '<div class="cart-card-source" style="color:#333;"><i class="fas fa-user"></i> ' + o.customerName + '</div>';
+                    }
                     html += '<div class="cart-card-body">';
                     for (var j = 0; j < o.items.length; j++) {
                         var it = o.items[j];
@@ -1470,6 +1478,9 @@ var App = {
                     var oclass = ord.status;
                     dhtml += '<div class="dash-drop-order ' + oclass + '">';
                     dhtml += '<div class="dash-drop-header"><span class="order-id"><i class="fas fa-receipt"></i> ' + ord.id + '</span><span class="order-time">' + otime + '</span></div>';
+                    if (ord.customerName) {
+                        dhtml += '<div style="padding:4px 12px;font-size:0.75rem;color:#555;background:#f0f0f0;"><i class="fas fa-user" style="margin-left:4px;"></i> ' + ord.customerName + '</div>';
+                    }
                     dhtml += '<div class="dash-drop-items">';
                     for (var m = 0; m < ord.items.length; m++) {
                         dhtml += '<div class="dash-drop-item"><span>' + ord.items[m].name + '</span><span class="di-qty">x' + ord.items[m].qty + ' — ' + (ord.items[m].price * ord.items[m].qty).toFixed(2) + ' \u0631.\u0633</span></div>';
