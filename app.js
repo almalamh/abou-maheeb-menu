@@ -150,6 +150,24 @@ var App = {
 
     saveItems: function() {
         try { localStorage.setItem('abou_maheeb_items', JSON.stringify(this.items)); } catch (e) { }
+        this.syncItemsToFirestore();
+    },
+
+    syncItemsToFirestore: function() {
+        if (typeof db === 'undefined') return;
+        try {
+            var itemsForFirestore = [];
+            for (var i = 0; i < this.items.length; i++) {
+                var it = this.items[i];
+                itemsForFirestore.push({
+                    id: it.id, name: it.name, category: it.category,
+                    barcode: it.barcode, price: it.price, cost: it.cost || 0,
+                    description: it.description || '', sizes: it.sizes || '',
+                    image: it.image || ''
+                });
+            }
+            db.collection('menu_items').doc('all').set({ items: itemsForFirestore, updatedAt: new Date().toISOString() }).catch(function() {});
+        } catch(e) {}
     },
 
     saveOrders: function() {
