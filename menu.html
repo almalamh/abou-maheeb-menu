@@ -325,7 +325,9 @@
     document.addEventListener('click', function() { getAudioContext(); }, { once: true });
     </script>
     <script>
-    var menuItems = [
+    var menuItems = [];
+
+    var defaultMenuItems = [
         { name:"برجر لحم كلاسيك", category:"برجر", price:17.25, description:"برجر لحم طازج مع جبنة وخضار", image:"https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400" },
         { name:"برجر دجاج مشوي", category:"برجر", price:16.10, description:"برجر دجاج مشوي على الفحم", image:"https://images.unsplash.com/photo-1606755962773-d324e0a13086?w=400" },
         { name:"برجر دجاج مقرمش (كريسبي)", category:"برجر", price:16.10, description:"برجر دجاج مقرمش بالبقسماط", image:"https://images.unsplash.com/photo-1625813506062-0aeb1d7a094b?w=400" },
@@ -351,6 +353,18 @@
         { name:"كنافة بالجبن", category:"حلويات", price:17.25, description:"كنافة بالجبنة مع قطر الزهر", image:"https://images.unsplash.com/photo-1519676867240-f03562e64548?w=400" },
         { name:"كيكة الشوكولاتة", category:"حلويات", price:11.50, description:"كيكة شوكولاتة طرية", image:"https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=400" }
     ];
+
+    function loadMenuItems() {
+        menuItems = defaultMenuItems.slice();
+        renderMenu();
+        if (typeof db === 'undefined') return;
+        db.collection('menu_items').doc('all').get().then(function(doc) {
+            if (doc.exists && doc.data().items && doc.data().items.length > 0) {
+                menuItems = doc.data().items;
+                renderMenu();
+            }
+        }).catch(function() {});
+    }
 
     var catIcons = {
         "\u0628\u0631\u062c\u0631":"fa-burger","\u0645\u0634\u0648\u064a\u0627\u062a":"fa-fire","\u0645\u0642\u0628\u0644\u0627\u062a":"fa-cookie-bite",
@@ -651,7 +665,7 @@
     });
     document.getElementById('modalSend').addEventListener('click', sendOrder);
 
-    renderMenu();
+    loadMenuItems();
 
     var savedOrder = getActiveOrder();
     if (savedOrder) {
