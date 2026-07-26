@@ -895,6 +895,8 @@ var App = {
         this.showReceipt(order);
         this.cart = [];
         this.renderPOSCart();
+        this.renderDashboard();
+        this.renderOrdersTable();
         this.showToast('\u062a\u0645 \u0625\u062a\u0645\u0627\u0645 \u0627\u0644\u0637\u0644\u0628 \u0628\u0646\u0627\u062d!');
     },
 
