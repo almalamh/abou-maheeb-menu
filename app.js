@@ -968,6 +968,9 @@ var App = {
         html += '<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:0.85rem;"><span>\u0627\u0644\u0636\u0631\u064a\u0628\u0629 (15%)</span><span>' + order.tax.toFixed(2) + '</span></div>';
         html += '<div style="display:flex;justify-content:space-between;padding:8px 0;font-size:1.1rem;font-weight:800;border-top:2px solid #2d3436;margin-top:8px;"><span>\u0627\u0644\u0625\u062c\u0645\u0627\u0644\u064a</span><span>' + order.total.toFixed(2) + '</span></div>';
         html += '<hr style="border:1px dashed #ccc;margin:12px 0;">';
+        if (order.customerName) {
+            html += '<p style="font-size:0.95rem;margin:6px 0;"><strong>\u0627\u0644\u0639\u0645\u064a\u0644: ' + order.customerName + '</strong></p>';
+        }
         html += '<p>\u0634\u0643\u0631\u0627\u064b \u0644\u0632\u064a\u0627\u0631\u062a\u0643\u0645!</p>';
         html += '</div>';
 
