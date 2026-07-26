@@ -1,4 +1,3 @@
-
 var CACHE_NAME = 'abou-maheeb-v2';
 var urlsToCache = [
     './',
