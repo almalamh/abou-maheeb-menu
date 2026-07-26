@@ -1750,6 +1750,11 @@ form {
         gap: 12px;
         align-items: stretch;
     }
+    .dash-cart-dropdown {
+        width: calc(100vw - 32px);
+        left: auto;
+        right: -8px;
+    }
 }
 
 /* Scrollbar */
