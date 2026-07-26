@@ -1265,7 +1265,7 @@ var App = {
     listenForFirebaseOrders: function() {
         var self = this;
         if (typeof db === 'undefined') return;
-        db.collection('orders').where('status', '==', 'new').onSnapshot(function(snapshot) {
+        db.collection('orders').where('status', 'in', ['new', 'received', 'preparing']).onSnapshot(function(snapshot) {
             snapshot.docChanges().forEach(function(change) {
                 if (change.type === 'added') {
                     var data = change.doc.data();
@@ -1278,21 +1278,34 @@ var App = {
                             id: data.id, items: data.items, subtotal: data.subtotal,
                             tax: data.tax, total: data.total, channel: data.channel || '\u0645\u062d\u0644',
                             paymentMethod: data.paymentMethod || '\u0643\u0627\u0634',
-                            date: data.date, status: 'new', source: data.source || 'menu',
+                            date: data.date, status: data.status || 'new', source: data.source || 'menu',
                             fcmToken: data.fcmToken || '',
                             customerName: data.customerName || ''
                         });
-                        self.renderCart();
-                        self.playOrderSound();
-                        self.vibrateDevice();
-                        self.flashTitle('\u0637\u0644\u0628 \u062c\u062f\u064a\u062f \u0645\u0646 \u0627\u0644\u0645\u0646\u064a\u0648!');
-                        self.showToast('\u0637\u0644\u0628 \u062c\u062f\u064a\u062f \u0645\u0646 \u0627\u0644\u0645\u0646\u064a\u0648: ' + data.id, 'warning');
-                        try {
-                            if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
-                                new Notification('\u0637\u0644\u0628 \u062c\u062f\u064a\u062f!', { body: '\u0637\u0644\u0628 \u062c\u062f\u064a\u062f \u0645\u0646 \u0627\u0644\u0645\u0646\u064a\u0648: ' + data.id, requireInteraction: true });
-                            }
-                        } catch(e) {}
+                        if (data.status === 'new') {
+                            self.renderCart();
+                            self.playOrderSound();
+                            self.vibrateDevice();
+                            self.flashTitle('\u0637\u0644\u0628 \u062c\u062f\u064a\u062f \u0645\u0646 \u0627\u0644\u0645\u0646\u064a\u0648!');
+                            self.showToast('\u0637\u0644\u0628 \u062c\u062f\u064a\u062f \u0645\u0646 \u0627\u0644\u0645\u0646\u064a\u0648: ' + data.id, 'warning');
+                            try {
+                                if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+                                    new Notification('\u0637\u0644\u0628 \u062c\u062f\u064a\u062f!', { body: '\u0637\u0644\u0628 \u062c\u062f\u064a\u062f \u0645\u0646 \u0627\u0644\u0645\u0646\u064a\u0648: ' + data.id, requireInteraction: true });
+                                }
+                            } catch(e) {}
+                        } else {
+                            self.renderCart();
+                        }
                     }
+                } else if (change.type === 'modified') {
+                    var modData = change.doc.data();
+                    for (var k = 0; k < self.cartOrders.length; k++) {
+                        if (self.cartOrders[k].id === modData.id) {
+                            self.cartOrders[k].status = modData.status;
+                            break;
+                        }
+                    }
+                    self.renderCart();
                 } else if (change.type === 'removed') {
                     var removedId = change.doc.id;
                     var newCart = [];
