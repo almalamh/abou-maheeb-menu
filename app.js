@@ -780,7 +780,7 @@ var App = {
         var clearBtn = document.getElementById('clearCart');
         if (clearBtn) clearBtn.addEventListener('click', function() { self.clearCart(); });
         var completeBtn = document.getElementById('completeOrder');
-        if (completeBtn) completeBtn.addEventListener('click', function() { self.completeOrder(); });
+        if (completeBtn) completeBtn.addEventListener('click', function() { self.completePOSOrder(); });
     },
 
     renderPOSItems: function(search) {
@@ -885,7 +885,7 @@ var App = {
         if (btn) btn.classList.add('active');
     },
 
-    completeOrder: function() {
+    completePOSOrder: function() {
         if (this.cart.length === 0) { this.showToast('\u0627\u0644\u0633\u0644\u0629 \u0641\u0627\u0631\u063a\u0629!', 'warning'); return; }
         var total = 0;
         for (var i = 0; i < this.cart.length; i++) { total += this.cart[i].price * this.cart[i].qty; }
@@ -1288,6 +1288,14 @@ var App = {
                             }
                         } catch(e) {}
                     }
+                } else if (change.type === 'removed') {
+                    var removedId = change.doc.id;
+                    var newCart = [];
+                    for (var j = 0; j < self.cartOrders.length; j++) {
+                        if (self.cartOrders[j].id !== removedId) { newCart.push(self.cartOrders[j]); }
+                    }
+                    self.cartOrders = newCart;
+                    self.renderCart();
                 }
             });
         }, function(err) {
