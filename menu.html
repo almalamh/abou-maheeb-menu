@@ -333,11 +333,16 @@
     function initFCM() {
         if (typeof firebase === 'undefined' || !firebase.messaging) return;
         try {
-            messagingInstance = firebase.messaging();
-            messagingInstance.onMessage(function(payload) {
-                notifyAlert();
-                if (payload.notification) { showToast(payload.notification.body || payload.notification.title); }
-            });
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.ready.then(function(reg) {
+                    messagingInstance = firebase.messaging({ serviceWorkerRegistration: reg });
+                    messagingInstance.onMessage(function(payload) {
+                        var msg = (payload.notification && (payload.notification.body || payload.notification.title)) || 'تحديث من المطعم';
+                        notifyAlert(msg);
+                        if (payload.notification) { showToast(msg); }
+                    });
+                });
+            }
         } catch(e) {}
     }
 
