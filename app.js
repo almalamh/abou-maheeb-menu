@@ -225,6 +225,7 @@ var App = {
                     if (page === 'pos') self.renderPOSItems();
                     if (page === 'dashboard') self.renderDashboard();
                     if (page === 'orders') self.renderOrdersTable();
+                    if (page === 'cart') self.renderCart();
                 });
             })(navLinks[i]);
         }
@@ -1264,15 +1265,20 @@ var App = {
 
     listenForFirebaseOrders: function() {
         var self = this;
-        if (typeof db === 'undefined') return;
-        db.collection('orders').where('status', 'in', ['new', 'received', 'preparing']).onSnapshot(function(snapshot) {
+        if (typeof db === 'undefined') { console.log('Firebase DB not defined'); return; }
+        console.log('Starting Firebase orders listener...');
+        db.collection('orders').onSnapshot(function(snapshot) {
+            console.log('Orders snapshot received, changes:', snapshot.docChanges().length);
             snapshot.docChanges().forEach(function(change) {
                 if (change.type === 'added') {
                     var data = change.doc.data();
+                    var activeStatuses = ['new', 'received', 'preparing'];
+                    var isDone = (data.status === 'done' || data.status === 'rejected');
                     var exists = false;
                     for (var i = 0; i < self.cartOrders.length; i++) {
                         if (self.cartOrders[i].id === data.id) { exists = true; break; }
                     }
+                    if (isDone) return;
                     if (!exists) {
                         self.cartOrders.unshift({
                             id: data.id, items: data.items, subtotal: data.subtotal,
@@ -1299,10 +1305,19 @@ var App = {
                     }
                 } else if (change.type === 'modified') {
                     var modData = change.doc.data();
-                    for (var k = 0; k < self.cartOrders.length; k++) {
-                        if (self.cartOrders[k].id === modData.id) {
-                            self.cartOrders[k].status = modData.status;
-                            break;
+                    var modDone = (modData.status === 'done' || modData.status === 'rejected');
+                    if (modDone) {
+                        var rmvCart = [];
+                        for (var r = 0; r < self.cartOrders.length; r++) {
+                            if (self.cartOrders[r].id !== modData.id) { rmvCart.push(self.cartOrders[r]); }
+                        }
+                        self.cartOrders = rmvCart;
+                    } else {
+                        for (var k = 0; k < self.cartOrders.length; k++) {
+                            if (self.cartOrders[k].id === modData.id) {
+                                self.cartOrders[k].status = modData.status;
+                                break;
+                            }
                         }
                     }
                     self.renderCart();
