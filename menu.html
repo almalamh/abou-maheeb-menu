@@ -773,6 +773,7 @@
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('sw.js').then(function(reg) {
             console.log('تم تسجيل Service Worker');
+            initFCM();
         }).catch(function(err) {
             console.log('خطأ في Service Worker:', err);
         });
