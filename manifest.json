@@ -2,13 +2,16 @@
     "name": "أبو مهيب - برجر ومشويات",
     "short_name": "أبو مهيب",
     "description": "قائمة أبو مهيب للبرجر والمشويات - اطلب من جوالك",
-    "start_url": "menu.html",
+    "id": "/abou-maheeb-menu/",
+    "start_url": "./menu.html",
+    "scope": "./",
     "display": "standalone",
     "orientation": "portrait",
     "background_color": "#0f0f23",
     "theme_color": "#e65100",
     "lang": "ar",
     "dir": "rtl",
+    "version": "2.0.0",
     "icons": [
         {
             "src": "icon-192.png",
@@ -23,6 +26,5 @@
             "purpose": "any maskable"
         }
     ],
-    "screenshots": [],
     "categories": ["food", "business"]
 }
