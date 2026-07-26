@@ -734,7 +734,7 @@ var App = {
         }
         this.scanCart = [];
         this.renderScanCart();
-        this.renderCart();
+        this.renderPOSCart();
         var navItems = document.querySelectorAll('.nav-item');
         for (var n = 0; n < navItems.length; n++) { navItems[n].classList.remove('active'); }
         var posNav = document.querySelector('[data-page="pos"]');
@@ -828,11 +828,11 @@ var App = {
         } else {
             this.cart.push({ id: item.id, name: item.name, price: item.price, qty: 1, category: item.category, barcode: item.barcode, image: item.image, description: item.description, sizes: item.sizes });
         }
-        this.renderCart();
+        this.renderPOSCart();
         this.showToast('\u062a\u0645\u062a \u0625\u0636\u0627\u0641\u0629 ' + item.name);
     },
 
-    renderCart: function() {
+    renderPOSCart: function() {
         var container = document.getElementById('cartItems');
         if (!container) return;
         if (this.cart.length === 0) {
@@ -863,12 +863,12 @@ var App = {
     updateQty: function(idx, delta) {
         this.cart[idx].qty += delta;
         if (this.cart[idx].qty <= 0) { this.cart.splice(idx, 1); }
-        this.renderCart();
+        this.renderPOSCart();
     },
 
     clearCart: function() {
         this.cart = [];
-        this.renderCart();
+        this.renderPOSCart();
     },
 
     setPaymentMethod: function(method, btn) {
@@ -894,8 +894,8 @@ var App = {
         this.saveOrders();
         this.showReceipt(order);
         this.cart = [];
-        this.renderCart();
-        this.showToast('\u062a\u0645 \u0625\u062a\u0645\u0627\u0645 \u0627\u0644\u0637\u0644\u0628 \u0628\u0646\u062c\u0627\u062d!');
+        this.renderPOSCart();
+        this.showToast('\u062a\u0645 \u0625\u062a\u0645\u0627\u0645 \u0627\u0644\u0637\u0644\u0628 \u0628\u0646\u0627\u062d!');
     },
 
     getMenuUrl: function() {
