@@ -1,12 +1,28 @@
-var CACHE_NAME = 'abou-maheeb-v2';
+importScripts('https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js');
+importScripts('https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js');
+
+firebase.initializeApp({
+    apiKey: "AIzaSyCOXdd8rSvTyILCvYqk5pS_WoaHJs2IxC0",
+    authDomain: "abou-maheeb.firebaseapp.com",
+    projectId: "abou-maheeb",
+    storageBucket: "abou-maheeb.firebasestorage.app",
+    messagingSenderId: "591919493287",
+    appId: "1:591919493287:web:4b55a5e6fadf7981f8eb82"
+});
+
+var messaging = firebase.messaging();
+var CACHE_NAME = 'abou-maheeb-v3';
 var urlsToCache = [
     './',
     './menu.html',
     './manifest.json',
+    './icon-192.png',
+    './icon-512.png',
     'https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap',
     'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css',
     'https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js',
-    'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js'
+    'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js',
+    'https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js'
 ];
 
 self.addEventListener('install', function(event) {
@@ -34,6 +50,7 @@ self.addEventListener('activate', function(event) {
 });
 
 self.addEventListener('fetch', function(event) {
+    if (event.request.url.indexOf('firestore.googleapis.com') !== -1) return;
     event.respondWith(
         fetch(event.request).then(function(response) {
             if (response && response.status === 200) {
@@ -49,33 +66,38 @@ self.addEventListener('fetch', function(event) {
     );
 });
 
-self.addEventListener('push', function(event) {
-    var data = { title: 'أبو مهيب - برجر ومشويات', body: 'تحديث حالة الطلب', icon: 'icon-192.png' };
-    if (event.data) {
-        try { data = event.data.json(); } catch(e) { data.body = event.data.text(); }
-    }
-    event.waitUntil(
-        self.registration.showNotification(data.title, {
-            body: data.body,
-            icon: data.icon || 'icon-192.png',
-            badge: 'icon-192.png',
-            vibrate: [300, 100, 300, 100, 300],
-            requireInteraction: true,
-            actions: [
-                { action: 'open', title: 'فتح القائمة' }
-            ]
-        })
-    );
+messaging.onBackgroundMessage(function(payload) {
+    var title = (payload.notification && payload.notification.title) || 'أبو مهيب - برجر ومشويات';
+    var body = (payload.notification && payload.notification.body) || '';
+    var options = {
+        body: body,
+        icon: 'icon-192.png',
+        badge: 'icon-192.png',
+        tag: payload.data && payload.data.orderId ? 'order-' + payload.data.orderId : 'notification',
+        renotify: true,
+        vibrate: [200, 100, 200],
+        data: payload.data || {}
+    };
+    self.registration.showNotification(title, options);
 });
 
 self.addEventListener('notificationclick', function(event) {
     event.notification.close();
+    var url = './menu.html';
+    if (event.notification.data && event.notification.data.orderId) {
+        url += '?order=' + event.notification.data.orderId;
+    }
     event.waitUntil(
-        clients.matchAll({ type: 'window' }).then(function(clientList) {
-            if (clientList.length > 0) {
-                return clientList[0].focus();
+        clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function(windowClients) {
+            for (var i = 0; i < windowClients.length; i++) {
+                var client = windowClients[i];
+                if (client.url.indexOf('menu.html') !== -1 && 'focus' in client) {
+                    return client.focus();
+                }
             }
-            return clients.openWindow('./menu.html');
+            if (clients.openWindow) {
+                return clients.openWindow(url);
+            }
         })
     );
 });
