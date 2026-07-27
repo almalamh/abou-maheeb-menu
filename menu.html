@@ -424,7 +424,6 @@
     };
 
     var cart = {};
-    var orderNum = 1;
     var selectedCategory = null;
 
     function renderCatFilter() {
@@ -460,7 +459,10 @@
     function genOrderId() {
         var d = new Date();
         var ds = d.getFullYear().toString().slice(2) + ('0'+(d.getMonth()+1)).slice(-2) + ('0'+d.getDate()).slice(-2);
-        return 'ABM-' + ds + '-' + ('000' + orderNum).slice(-4);
+        var ts = d.getTime().toString().slice(-6);
+        var rnd = '';
+        for (var i = 0; i < 4; i++) { rnd += Math.floor(Math.random() * 10); }
+        return 'ABM-' + ds + '-' + ts + rnd;
     }
 
     function renderMenu() {
@@ -632,7 +634,6 @@
                 cart = {};
                 renderMenu();
                 updateCartBar();
-                orderNum++;
                 try { saveActiveOrder(orderId); } catch(e) {}
                 document.getElementById('successOverlay').classList.add('active');
                 setTimeout(function() {
