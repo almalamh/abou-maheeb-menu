@@ -1293,19 +1293,121 @@ var App = {
         var self = this;
         if (typeof db === 'undefined') { console.log('Firebase DB not defined'); return; }
         console.log('Starting Firebase orders listener...');
-        db.collection('orders').onSnapshot(function(snapshot) {
-            console.log('Orders snapshot received, changes:', snapshot.docChanges().length);
-            snapshot.docChanges().forEach(function(change) {
-                if (change.type === 'added') {
-                    var data = change.doc.data();
-                    var activeStatuses = ['new', 'received', 'preparing'];
-                    var isDone = (data.status === 'done' || data.status === 'rejected');
-                    var exists = false;
-                    for (var i = 0; i < self.cartOrders.length; i++) {
-                        if (self.cartOrders[i].id === data.id) { exists = true; break; }
+
+        function addOrderToCart(data) {
+            var isDone = (data.status === 'done' || data.status === 'rejected');
+            if (isDone) return false;
+            var exists = false;
+            for (var i = 0; i < self.cartOrders.length; i++) {
+                if (self.cartOrders[i].id === data.id) { exists = true; break; }
+            }
+            if (exists) return false;
+            self.cartOrders.unshift({
+                id: data.id, items: data.items, subtotal: data.subtotal,
+                tax: data.tax, total: data.total, channel: data.channel || '\u0645\u062d\u0644',
+                paymentMethod: data.paymentMethod || '\u0643\u0627\u0634',
+                date: data.date, status: data.status || 'new', source: data.source || 'menu',
+                fcmToken: data.fcmToken || '',
+                customerName: data.customerName || ''
+            });
+            return true;
+        }
+
+        function notifyNewOrder(data) {
+            self.playOrderSound();
+            self.vibrateDevice();
+            self.flashTitle('\u0637\u0644\u0628 \u062c\u062f\u064a\u062f \u0645\u0646 \u0627\u0644\u0645\u0646\u064a\u0648!');
+            self.showToast('\u0637\u0644\u0628 \u062c\u062f\u064a\u062f \u0645\u0646 \u0627\u0644\u0645\u0646\u064a\u0648: ' + data.id, 'warning');
+            try {
+                if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+                    new Notification('\u0637\u0644\u0628 \u062c\u062f\u064a\u062f!', { body: '\u0637\u0644\u0628 \u062c\u062f\u064a\u062f \u0645\u0646 \u0627\u0644\u0645\u0646\u064a\u0648: ' + data.id, requireInteraction: true });
+                }
+            } catch(e) {}
+        }
+
+        function handleSnapshotChanges(snapshot) {
+            var changes = snapshot.docChanges();
+            var hasNewOrders = false;
+            for (var c = 0; c < changes.length; c++) {
+                var change = changes[c];
+                try {
+                    if (change.type === 'added') {
+                        var data = change.doc.data();
+                        var added = addOrderToCart(data);
+                        if (added && data.status === 'new') {
+                            hasNewOrders = true;
+                            notifyNewOrder(data);
+                        }
+                    } else if (change.type === 'modified') {
+                        var modData = change.doc.data();
+                        var modDone = (modData.status === 'done' || modData.status === 'rejected');
+                        if (modDone) {
+                            var rmvCart = [];
+                            for (var r = 0; r < self.cartOrders.length; r++) {
+                                if (self.cartOrders[r].id !== modData.id) { rmvCart.push(self.cartOrders[r]); }
+                            }
+                            self.cartOrders = rmvCart;
+                        } else {
+                            for (var k = 0; k < self.cartOrders.length; k++) {
+                                if (self.cartOrders[k].id === modData.id) {
+                                    self.cartOrders[k].status = modData.status;
+                                    break;
+                                }
+                            }
+                        }
+                    } else if (change.type === 'removed') {
+                        var removedId = change.doc.id;
+                        var newCart = [];
+                        for (var j = 0; j < self.cartOrders.length; j++) {
+                            if (self.cartOrders[j].id !== removedId) { newCart.push(self.cartOrders[j]); }
+                        }
+                        self.cartOrders = newCart;
                     }
-                    if (isDone) return;
-                    if (!exists) {
+                } catch(e) { console.log('Error processing change:', e); }
+            }
+            self.renderCart();
+        }
+
+        db.collection('orders').onSnapshot(function(snapshot) {
+            console.log('Orders snapshot, changes:', snapshot.docChanges().length);
+            handleSnapshotChanges(snapshot);
+        }, function(err) {
+            console.log('Firebase listener error:', err);
+        });
+
+        setInterval(function() {
+            if (typeof db === 'undefined') return;
+            db.collection('orders').get().then(function(snapshot) {
+                var idsInFirestore = {};
+                snapshot.forEach(function(doc) {
+                    var data = doc.data();
+                    if (data.status !== 'done' && data.status !== 'rejected') {
+                        idsInFirestore[data.id] = data;
+                    }
+                });
+                var changed = false;
+                for (var i = self.cartOrders.length - 1; i >= 0; i--) {
+                    var co = self.cartOrders[i];
+                    if (!idsInFirestore[co.id]) {
+                        self.cartOrders.splice(i, 1);
+                        changed = true;
+                    } else {
+                        if (co.status !== idsInFirestore[co.id].status) {
+                            co.status = idsInFirestore[co.id].status;
+                            changed = true;
+                        }
+                    }
+                }
+                var allDocs = [];
+                snapshot.forEach(function(doc) { allDocs.push(doc.data()); });
+                for (var n = 0; n < allDocs.length; n++) {
+                    var data = allDocs[n];
+                    if (data.status === 'done' || data.status === 'rejected') continue;
+                    var found = false;
+                    for (var j = 0; j < self.cartOrders.length; j++) {
+                        if (self.cartOrders[j].id === data.id) { found = true; break; }
+                    }
+                    if (!found) {
                         self.cartOrders.unshift({
                             id: data.id, items: data.items, subtotal: data.subtotal,
                             tax: data.tax, total: data.total, channel: data.channel || '\u0645\u062d\u0644',
@@ -1314,52 +1416,15 @@ var App = {
                             fcmToken: data.fcmToken || '',
                             customerName: data.customerName || ''
                         });
-                        if (data.status === 'new') {
-                            self.renderCart();
-                            self.playOrderSound();
-                            self.vibrateDevice();
-                            self.flashTitle('\u0637\u0644\u0628 \u062c\u062f\u064a\u062f \u0645\u0646 \u0627\u0644\u0645\u0646\u064a\u0648!');
-                            self.showToast('\u0637\u0644\u0628 \u062c\u062f\u064a\u062f \u0645\u0646 \u0627\u0644\u0645\u0646\u064a\u0648: ' + data.id, 'warning');
-                            try {
-                                if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
-                                    new Notification('\u0637\u0644\u0628 \u062c\u062f\u064a\u062f!', { body: '\u0637\u0644\u0628 \u062c\u062f\u064a\u062f \u0645\u0646 \u0627\u0644\u0645\u0646\u064a\u0648: ' + data.id, requireInteraction: true });
-                                }
-                            } catch(e) {}
-                        } else {
-                            self.renderCart();
-                        }
+                        if (data.status === 'new') { notifyNewOrder(data); }
+                        changed = true;
                     }
-                } else if (change.type === 'modified') {
-                    var modData = change.doc.data();
-                    var modDone = (modData.status === 'done' || modData.status === 'rejected');
-                    if (modDone) {
-                        var rmvCart = [];
-                        for (var r = 0; r < self.cartOrders.length; r++) {
-                            if (self.cartOrders[r].id !== modData.id) { rmvCart.push(self.cartOrders[r]); }
-                        }
-                        self.cartOrders = rmvCart;
-                    } else {
-                        for (var k = 0; k < self.cartOrders.length; k++) {
-                            if (self.cartOrders[k].id === modData.id) {
-                                self.cartOrders[k].status = modData.status;
-                                break;
-                            }
-                        }
-                    }
-                    self.renderCart();
-                } else if (change.type === 'removed') {
-                    var removedId = change.doc.id;
-                    var newCart = [];
-                    for (var j = 0; j < self.cartOrders.length; j++) {
-                        if (self.cartOrders[j].id !== removedId) { newCart.push(self.cartOrders[j]); }
-                    }
-                    self.cartOrders = newCart;
-                    self.renderCart();
                 }
+                if (changed) { self.renderCart(); }
+            }).catch(function(err) {
+                console.log('Polling error:', err);
             });
-        }, function(err) {
-            console.log('Firebase listener error:', err);
-        });
+        }, 10000);
     },
 
     acceptOrder: function(id) {
