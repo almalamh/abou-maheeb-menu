@@ -194,7 +194,7 @@
         </div>
     </div>
 
-    <div class="active-order-banner" id="activeOrderBanner" onclick="var oid=getActiveOrder();if(oid){showOrderStatus(oid);this.style.display='none';}"><i class="fas fa-bell"></i> لديك طلب نشط — اضغط لعرض الحالة</div>
+    <div class="active-order-banner" id="activeOrderBanner" onclick="var oid=getActiveOrder()||currentOrderId;if(oid){showOrderStatus(oid);this.style.display='none';}"><i class="fas fa-bell"></i> لديك طلب نشط — اضغط لعرض الحالة</div>
 
     <div class="install-banner" id="installBanner">
         <div class="ib-inner">
@@ -255,19 +255,26 @@
     function playNotifSound() {
         try {
             var ctx = getAudioContext();
-            var freqs = [523.25, 659.25, 783.99, 1046.50];
-            for (var i = 0; i < freqs.length; i++) {
-                var osc = ctx.createOscillator();
-                var gain = ctx.createGain();
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-                osc.frequency.value = freqs[i];
-                osc.type = 'sine';
-                var t = ctx.currentTime + i * 0.12;
-                gain.gain.setValueAtTime(0.4, t);
-                gain.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
-                osc.start(t);
-                osc.stop(t + 0.35);
+            function doPlay() {
+                var freqs = [523.25, 659.25, 783.99, 1046.50];
+                for (var i = 0; i < freqs.length; i++) {
+                    var osc = ctx.createOscillator();
+                    var gain = ctx.createGain();
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.frequency.value = freqs[i];
+                    osc.type = 'sine';
+                    var t = ctx.currentTime + i * 0.12;
+                    gain.gain.setValueAtTime(0.4, t);
+                    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
+                    osc.start(t);
+                    osc.stop(t + 0.35);
+                }
+            }
+            if (ctx.state === 'suspended') {
+                ctx.resume().then(doPlay).catch(function() { doPlay(); });
+            } else {
+                doPlay();
             }
         } catch(e) {}
     }
@@ -652,54 +659,60 @@
     }
 
     function showOrderStatus(orderId) {
-        currentOrderId = orderId;
-        var overlay = document.getElementById('statusOverlay');
-        var icon = document.getElementById('statusIcon');
-        var title = document.getElementById('statusTitle');
-        var sub = document.getElementById('statusSub');
-        document.getElementById('statusOrderId').textContent = orderId;
-        var step1 = document.getElementById('step1');
-        var step2 = document.getElementById('step2');
-        var step3 = document.getElementById('step3');
-        var step4 = document.getElementById('step4');
+        try {
+            currentOrderId = orderId;
+            var overlay = document.getElementById('statusOverlay');
+            var icon = document.getElementById('statusIcon');
+            var title = document.getElementById('statusTitle');
+            var sub = document.getElementById('statusSub');
+            document.getElementById('statusOrderId').textContent = orderId;
+            var step1 = document.getElementById('step1');
+            var step2 = document.getElementById('step2');
+            var step3 = document.getElementById('step3');
+            var step4 = document.getElementById('step4');
 
-        step1.className = 'status-step done';
-        step2.className = 'status-step active';
-        step3.className = 'status-step';
-        step4.className = 'status-step';
-        icon.className = 'status-icon';
-        icon.innerHTML = '<i class="fas fa-clock"></i>';
-        title.textContent = 'جاري انتظار استلام الطلب...';
-        sub.innerHTML = 'رقم الطلب: ' + orderId;
-        icon.style.background = '';
-        icon.style.color = '';
-        overlay.classList.add('active');
-        document.getElementById('activeOrderBanner').style.display = 'none';
-        try { saveActiveOrder(orderId); } catch(e) {}
+            step1.className = 'status-step done';
+            step2.className = 'status-step active';
+            step3.className = 'status-step';
+            step4.className = 'status-step';
+            icon.className = 'status-icon';
+            icon.innerHTML = '<i class="fas fa-clock"></i>';
+            title.textContent = 'جاري انتظار استلام الطلب...';
+            sub.innerHTML = 'رقم الطلب: ' + orderId;
+            icon.style.background = '';
+            icon.style.color = '';
+            overlay.classList.add('active');
+            document.getElementById('activeOrderBanner').style.display = 'none';
+            try { saveActiveOrder(orderId); } catch(e) {}
 
-        setupOrderListener(orderId);
-        startOrderPolling(orderId);
+            setupOrderListener(orderId);
+            startOrderPolling(orderId);
+        } catch(e) {
+            console.log('showOrderStatus error:', e);
+        }
     }
 
     function setupOrderListener(orderId) {
-        if (currentOrderUnsubscribe) { currentOrderUnsubscribe(); currentOrderUnsubscribe = null; }
+        if (currentOrderUnsubscribe) { try { currentOrderUnsubscribe(); } catch(e) {} currentOrderUnsubscribe = null; }
         currentOrderLastStatus = 'new';
         try {
             currentOrderUnsubscribe = db.collection('orders').doc(orderId).onSnapshot(function(doc) {
                 if (!doc.exists) return;
                 handleOrderStatus(doc.data().status);
             }, function(err) {
-                console.log('Snapshot error, will retry on focus:', err);
+                console.log('Snapshot error, will retry:', err);
+                currentOrderUnsubscribe = null;
             });
-        } catch(e) { console.log('onSnapshot setup error:', e); }
+        } catch(e) { console.log('onSnapshot setup error:', e); currentOrderUnsubscribe = null; }
     }
 
     function startOrderPolling(orderId) {
         if (currentPollInterval) { clearInterval(currentPollInterval); currentPollInterval = null; }
         currentPollInterval = setInterval(function() {
-            if (!currentOrderId) { clearInterval(currentPollInterval); return; }
+            if (!currentOrderId) { clearInterval(currentPollInterval); currentPollInterval = null; return; }
             if (currentOrderLastStatus === 'done' || currentOrderLastStatus === 'rejected') {
                 clearInterval(currentPollInterval);
+                currentPollInterval = null;
                 return;
             }
             db.collection('orders').doc(currentOrderId).get().then(function(doc) {
@@ -707,13 +720,14 @@
                     handleOrderStatus(doc.data().status);
                 }
             }).catch(function() {});
-        }, 5000);
+        }, 3000);
     }
 
     function checkOrderNow() {
         if (!currentOrderId) return;
         if (currentOrderLastStatus === 'done' || currentOrderLastStatus === 'rejected') return;
         if (!currentOrderUnsubscribe) { setupOrderListener(currentOrderId); }
+        if (!currentPollInterval) { startOrderPolling(currentOrderId); }
         db.collection('orders').doc(currentOrderId).get().then(function(doc) {
             if (doc.exists) {
                 handleOrderStatus(doc.data().status);
@@ -790,6 +804,10 @@
 
     document.addEventListener('visibilitychange', function() {
         if (!document.hidden && currentOrderId) {
+            if (currentOrderLastStatus !== 'done' && currentOrderLastStatus !== 'rejected') {
+                if (!currentOrderUnsubscribe) { setupOrderListener(currentOrderId); }
+                if (!currentPollInterval) { startOrderPolling(currentOrderId); }
+            }
             checkOrderNow();
         }
     });
