@@ -11,7 +11,7 @@ firebase.initializeApp({
 });
 
 var messaging = firebase.messaging();
-var CACHE_NAME = 'abou-maheeb-v8';
+var CACHE_NAME = 'abou-maheeb-v9';
 var urlsToCache = [
     './',
     './menu.html',
