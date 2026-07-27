@@ -127,16 +127,42 @@ var App = {
     },
 
     loadData: function() {
+        var self = this;
         var savedItems = localStorage.getItem('abou_maheeb_items');
         var savedOrders = localStorage.getItem('abou_maheeb_orders');
         try { this.items = savedItems ? JSON.parse(savedItems) : []; } catch (e) { this.items = []; }
         try { this.orders = savedOrders ? JSON.parse(savedOrders) : []; } catch (e) { this.orders = []; }
-        if (!this.items || this.items.length === 0) {
-            this.items = this.createDefaultItems();
-            this.saveItems();
-        }
         if (!this.orders) { this.orders = []; }
-        this.resyncAllItems();
+        if (!this.items || this.items.length === 0) {
+            if (typeof db !== 'undefined') {
+                db.collection('menu_items').doc('all').get().then(function(doc) {
+                    if (doc.exists && doc.data().items && doc.data().items.length > 0) {
+                        self.items = doc.data().items;
+                        try { localStorage.setItem('abou_maheeb_items', JSON.stringify(self.items)); } catch(e) {}
+                    } else {
+                        self.items = self.createDefaultItems();
+                        self.saveItems();
+                    }
+                    self.resyncAllItems();
+                    self.renderItemsGrid();
+                    self.renderBarcodeSelect();
+                    self.renderPOSItems();
+                }).catch(function() {
+                    self.items = self.createDefaultItems();
+                    self.saveItems();
+                    self.resyncAllItems();
+                    self.renderItemsGrid();
+                    self.renderBarcodeSelect();
+                    self.renderPOSItems();
+                });
+            } else {
+                self.items = self.createDefaultItems();
+                self.saveItems();
+                self.resyncAllItems();
+            }
+        } else {
+            this.resyncAllItems();
+        }
     },
 
     createDefaultItems: function() {
