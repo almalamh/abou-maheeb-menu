@@ -11,59 +11,7 @@
     <div class="login-page" id="loginPage">
         <div class="login-box">
             <div class="login-logo">
-                <svg class="pro-logo login-logo-svg" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
-                    <defs>
-                        <linearGradient id="bf" x1="0%" y1="100%" x2="100%" y2="0%">
-                            <stop offset="0%" stop-color="#bf360c"/>
-                            <stop offset="50%" stop-color="#e65100"/>
-                            <stop offset="100%" stop-color="#ff9e40"/>
-                        </linearGradient>
-                        <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" stop-color="#ff9e40"/>
-                            <stop offset="100%" stop-color="#ffd54f"/>
-                        </linearGradient>
-                        <linearGradient id="bd" x1="0%" y1="0%" x2="0%" y2="100%">
-                            <stop offset="0%" stop-color="#1a1a2e"/>
-                            <stop offset="100%" stop-color="#0f0f23"/>
-                        </linearGradient>
-                        <filter id="gl">
-                            <feGaussianBlur stdDeviation="1.5"/>
-                            <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
-                        </filter>
-                    </defs>
-                    <!-- outer ring -->
-                    <circle cx="120" cy="120" r="115" fill="none" stroke="url(#bg)" stroke-width="3"/>
-                    <circle cx="120" cy="120" r="108" fill="url(#bd)"/>
-                    <circle cx="120" cy="120" r="100" fill="none" stroke="url(#bg)" stroke-width="1.5" opacity="0.4"/>
-                    <circle cx="120" cy="120" r="96" fill="none" stroke="url(#bg)" stroke-width="0.5" opacity="0.2"/>
-                    <!-- top text arc - أبو مهيب -->
-                    <path id="topArc" d="M 35 120 A 85 85 0 0 1 205 120" fill="none"/>
-                    <text fill="url(#bg)" font-family="Cairo, sans-serif" font-size="22" font-weight="800" letter-spacing="4">
-                        <textPath href="#topArc" startOffset="50%" text-anchor="middle">أبو مهيب</textPath>
-                    </text>
-                    <!-- bottom text arc - برجر ومشويات -->
-                    <path id="botArc" d="M 35 125 A 85 85 0 0 0 205 125" fill="none"/>
-                    <text fill="url(#bg)" font-family="Cairo, sans-serif" font-size="13" font-weight="600" letter-spacing="2" opacity="0.7">
-                        <textPath href="#botArc" startOffset="50%" text-anchor="middle">برجر ومشويات</textPath>
-                    </text>
-                    <!-- side dots -->
-                    <circle cx="32" cy="122" r="3.5" fill="url(#bg)" opacity="0.8"/>
-                    <circle cx="208" cy="122" r="3.5" fill="url(#bg)" opacity="0.8"/>
-                    <!-- flame group -->
-                    <g transform="translate(120,105)" filter="url(#gl)">
-                        <path d="M0,-35 C-5,-25 -28,0 -28,20 C-28,33 -16,42 0,45 C16,42 28,33 28,20 C28,0 5,-25 0,-35 Z" fill="url(#bf)"/>
-                        <path d="M0,-15 C-3,-8 -16,5 -16,17 C-16,26 -9,31 0,33 C9,31 16,26 16,17 C16,5 3,-8 0,-15 Z" fill="#ffcc80" opacity="0.75"/>
-                        <path d="M0,0 C-2,5 -8,12 -8,20 C-8,26 -4,29 0,30 C4,29 8,26 8,20 C8,12 2,5 0,0 Z" fill="#fff3e0" opacity="0.85"/>
-                    </g>
-                    <!-- grill lines -->
-                    <line x1="75" y1="158" x2="165" y2="158" stroke="url(#bg)" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
-                    <line x1="80" y1="165" x2="160" y2="165" stroke="url(#bg)" stroke-width="2" stroke-linecap="round" opacity="0.35"/>
-                    <line x1="85" y1="172" x2="155" y2="172" stroke="url(#bg)" stroke-width="2" stroke-linecap="round" opacity="0.2"/>
-                    <!-- small stars -->
-                    <circle cx="120" cy="30" r="2" fill="url(#bg)" opacity="0.6"/>
-                    <circle cx="100" cy="35" r="1.2" fill="url(#bg)" opacity="0.3"/>
-                    <circle cx="140" cy="35" r="1.2" fill="url(#bg)" opacity="0.3"/>
-                </svg>
+                <img src="https://almalamh.github.io/abou-maheeb-menu/icon-512.png?v=2" alt="أبو مهيب" class="pro-logo login-logo-svg" style="width:180px;height:180px;border-radius:50%;object-fit:contain;">
                 <h1>أبو مهيب</h1>
                 <p>برجر ومشويات</p>
             </div>
@@ -87,45 +35,7 @@
     <div class="app-container" id="appContainer" style="display:none;">
         <aside class="sidebar">
             <div class="logo">
-                <svg class="pro-logo sidebar-logo-svg" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
-                    <defs>
-                        <linearGradient id="sf" x1="0%" y1="100%" x2="100%" y2="0%">
-                            <stop offset="0%" stop-color="#bf360c"/>
-                            <stop offset="50%" stop-color="#e65100"/>
-                            <stop offset="100%" stop-color="#ff9e40"/>
-                        </linearGradient>
-                        <linearGradient id="sg" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" stop-color="#ff9e40"/>
-                            <stop offset="100%" stop-color="#ffd54f"/>
-                        </linearGradient>
-                        <linearGradient id="sd" x1="0%" y1="0%" x2="0%" y2="100%">
-                            <stop offset="0%" stop-color="rgba(255,255,255,0.12)"/>
-                            <stop offset="100%" stop-color="rgba(255,255,255,0.04)"/>
-                        </linearGradient>
-                    </defs>
-                    <circle cx="120" cy="120" r="115" fill="none" stroke="url(#sg)" stroke-width="3"/>
-                    <circle cx="120" cy="120" r="108" fill="url(#sd)"/>
-                    <circle cx="120" cy="120" r="100" fill="none" stroke="url(#sg)" stroke-width="1.5" opacity="0.35"/>
-                    <circle cx="120" cy="120" r="96" fill="none" stroke="url(#sg)" stroke-width="0.5" opacity="0.15"/>
-                    <path id="sta" d="M 35 120 A 85 85 0 0 1 205 120" fill="none"/>
-                    <text fill="url(#sg)" font-family="Cairo, sans-serif" font-size="22" font-weight="800" letter-spacing="4">
-                        <textPath href="#sta" startOffset="50%" text-anchor="middle">أبو مهيب</textPath>
-                    </text>
-                    <path id="sba" d="M 35 125 A 85 85 0 0 0 205 125" fill="none"/>
-                    <text fill="url(#sg)" font-family="Cairo, sans-serif" font-size="13" font-weight="600" letter-spacing="2" opacity="0.6">
-                        <textPath href="#sba" startOffset="50%" text-anchor="middle">برجر ومشويات</textPath>
-                    </text>
-                    <circle cx="32" cy="122" r="3.5" fill="url(#sg)" opacity="0.7"/>
-                    <circle cx="208" cy="122" r="3.5" fill="url(#sg)" opacity="0.7"/>
-                    <g transform="translate(120,105)">
-                        <path d="M0,-35 C-5,-25 -28,0 -28,20 C-28,33 -16,42 0,45 C16,42 28,33 28,20 C28,0 5,-25 0,-35 Z" fill="url(#sf)"/>
-                        <path d="M0,-15 C-3,-8 -16,5 -16,17 C-16,26 -9,31 0,33 C9,31 16,26 16,17 C16,5 3,-8 0,-15 Z" fill="#ffcc80" opacity="0.7"/>
-                        <path d="M0,0 C-2,5 -8,12 -8,20 C-8,26 -4,29 0,30 C4,29 8,26 8,20 C8,12 2,5 0,0 Z" fill="#fff3e0" opacity="0.8"/>
-                    </g>
-                    <line x1="75" y1="158" x2="165" y2="158" stroke="url(#sg)" stroke-width="2" stroke-linecap="round" opacity="0.4"/>
-                    <line x1="80" y1="165" x2="160" y2="165" stroke="url(#sg)" stroke-width="2" stroke-linecap="round" opacity="0.25"/>
-                    <line x1="85" y1="172" x2="155" y2="172" stroke="url(#sg)" stroke-width="2" stroke-linecap="round" opacity="0.15"/>
-                </svg>
+                <img src="https://almalamh.github.io/abou-maheeb-menu/icon-512.png?v=2" alt="أبو مهيب" class="pro-logo sidebar-logo-svg" style="width:120px;height:120px;border-radius:50%;object-fit:contain;">
                 <div class="sidebar-qr" id="sidebarQR"></div>
                 <h1>أبو مهيب</h1>
             </div>
@@ -216,24 +126,7 @@
                                     <textPath href="#welcomeArc" startOffset="50%" text-anchor="middle">مرحباً بكم في مطاعم أبو مهيب للمشاوي والبرجر</textPath>
                                 </text>
                             </svg>
-                            <svg viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg" style="width:100px;height:100px;filter:drop-shadow(0 4px 20px rgba(255,158,64,0.3));">
-                                <defs>
-                                    <linearGradient id="dwf" x1="0%" y1="100%" x2="100%" y2="0%"><stop offset="0%" stop-color="#bf360c"/><stop offset="50%" stop-color="#e65100"/><stop offset="100%" stop-color="#ff9e40"/></linearGradient>
-                                    <linearGradient id="dwg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#ff9e40"/><stop offset="100%" stop-color="#ffd54f"/></linearGradient>
-                                    <linearGradient id="dwd" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="rgba(255,255,255,0.15)"/><stop offset="100%" stop-color="rgba(255,255,255,0.05)"/></linearGradient>
-                                </defs>
-                                <circle cx="120" cy="120" r="115" fill="none" stroke="url(#dwg)" stroke-width="3"/>
-                                <circle cx="120" cy="120" r="108" fill="url(#dwd)"/>
-                                <circle cx="120" cy="120" r="100" fill="none" stroke="url(#dwg)" stroke-width="1.5" opacity="0.35"/>
-                                <path id="dwa" d="M 35 120 A 85 85 0 0 1 205 120" fill="none"/>
-                                <text fill="url(#dwg)" font-family="Cairo,Arial,sans-serif" font-size="22" font-weight="800" letter-spacing="4"><textPath href="#dwa" startOffset="50%" text-anchor="middle">أبو مهيب</textPath></text>
-                                <path id="dwb" d="M 35 125 A 85 85 0 0 0 205 125" fill="none"/>
-                                <text fill="url(#dwg)" font-family="Cairo,Arial,sans-serif" font-size="13" font-weight="600" letter-spacing="2" opacity="0.6"><textPath href="#dwb" startOffset="50%" text-anchor="middle">برجر ومشويات</textPath></text>
-                                <circle cx="32" cy="122" r="3.5" fill="url(#dwg)" opacity="0.7"/>
-                                <circle cx="208" cy="122" r="3.5" fill="url(#dwg)" opacity="0.7"/>
-                                <g transform="translate(120,105)"><path d="M0,-35 C-5,-25 -28,0 -28,20 C-28,33 -16,42 0,45 C16,42 28,33 28,20 C28,0 5,-25 0,-35 Z" fill="url(#dwf)"/><path d="M0,-15 C-3,-8 -16,5 -16,17 C-16,26 -9,31 0,33 C9,31 16,26 16,17 C16,5 3,-8 0,-15 Z" fill="#ffcc80" opacity="0.7"/></g>
-                                <line x1="75" y1="158" x2="165" y2="158" stroke="url(#dwg)" stroke-width="2" stroke-linecap="round" opacity="0.4"/>
-                            </svg>
+                            <img src="https://almalamh.github.io/abou-maheeb-menu/icon-512.png?v=2" alt="أبو مهيب" style="width:100px;height:100px;border-radius:50%;object-fit:contain;filter:drop-shadow(0 4px 20px rgba(255,158,64,0.3));">
                             <div class="dash-welcome-qr">
                                 <div id="dashQR"></div>
                                 <span>امسح لعرض القائمة</span>
